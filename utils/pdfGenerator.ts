@@ -248,7 +248,9 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
  * تقرير التأخر والانصراف (تم الحفاظ عليه كما هو)
  */
 const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => {
-  const dayName = getArabicDayName(report.date);
+  const actualDayName = (report.type === 'مساءلة_حصص' && report.missedClasses && report.missedClasses.length > 0)
+    ? report.missedClasses[0].day
+    : getArabicDayName(report.date);
   const civilId = String(employee.civilId || '').padStart(10, ' ').slice(-10);
   const civilIdHtml = civilId.split('').map(num => `<div class="digit">${num.trim() || '&nbsp;'}</div>`).join('');
 
@@ -300,28 +302,28 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
             <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
           </div>
           <p style="font-weight: 900; margin: 8px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
-          <p style="font-weight: 700; line-height: 1.6;">
-            إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date} م</span>، اتضح لنا ما يلي:
+          <p style="font-weight: 700; line-height: 1.6; margin: 5px 0;">
+            إنه في يوم: <span class="dynamic-data">${actualDayName}</span>، بتاريخ: <span class="dynamic-data">${report.date} م</span>، اتضح لنا ما يلي:
           </p>
           
           ${report.type === 'مساءلة_حصص' ? `
-          <div style="margin-top: 15px;">
-            <p style="font-weight: 900; margin-bottom: 8px;">عدم تواجدكم أثناء العمل في الحصص التالية:</p>
-            <table class="data-table" style="width: 100%;">
+          <div style="margin-top: 5px;">
+            <p style="font-weight: 900; margin-bottom: 4px; font-size: 8.5pt;">عدم تواجدكم أثناء العمل في الحصص التالية:</p>
+            <table class="data-table" style="width: 100%; margin-bottom: 5px;">
               <thead>
                 <tr>
-                  <th>اليوم</th>
-                  <th>الحصة</th>
-                  <th>المادة</th>
-                  <th>الصف</th>
-                  <th>الفصل</th>
+                  <th style="padding: 2px;">اليوم</th>
+                  <th style="padding: 2px;">الحصة</th>
+                  <th style="padding: 2px;">المادة</th>
+                  <th style="padding: 2px;">الصف</th>
+                  <th style="padding: 2px;">الفصل</th>
                 </tr>
               </thead>
               <tbody>
-                ${(report.missedClasses || []).map(c => `<tr><td>${c.day}</td><td>${c.session}</td><td>${c.subject}</td><td>${c.grade}</td><td>${c.section}</td></tr>`).join('')}
+                ${(report.missedClasses || []).map(c => `<tr><td style="padding: 2px;">${c.day}</td><td style="padding: 2px;">${c.session}</td><td style="padding: 2px;">${c.subject}</td><td style="padding: 2px;">${c.grade}</td><td style="padding: 2px;">${c.section}</td></tr>`).join('')}
               </tbody>
             </table>
-            <p style="font-weight: 900; color: #c00; margin-top: 8px;">ملاحظة: سوف يتم احتسابها كإنصراف مبكر بمدة (45 دقيقة لكل حصة).</p>
+            <p style="font-weight: 900; color: #c00; margin-top: 2px; font-size: 8pt;">ملاحظة: سوف يتم احتسابها كإنصراف مبكر بمدة (45 دقيقة لكل حصة).</p>
           </div>
           ` : `
           <div style="margin-right: 20px; margin-top: 8px;">
@@ -340,18 +342,18 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           </div>
           `}
 
-          ${report.notes ? `<div class="notes-box"><b>الأسباب / الملاحظات:</b> ${report.notes}</div>` : ''}
+          ${report.notes ? `<div class="notes-box" style="margin: 4px 0; padding: 4px;"><b>الأسباب / الملاحظات:</b> ${report.notes}</div>` : ''}
 
-          <p style="margin-top: 10px; font-weight: 700;">نأمل توضيح أسباب ذلك مع إرفاق ما يؤيد عذركم ،،،،،، ولكم تحياتي</p>
+          <p style="margin-top: 5px; font-weight: 700;">نأمل توضيح أسباب ذلك مع إرفاق ما يؤيد عذركم ،،،،،، ولكم تحياتي</p>
           
-          <div class="signature-row" style="margin-top: 20px;">
+          <div class="signature-row" style="margin-top: 10px;">
             <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: ..........................</span>
             <span>التاريخ: <span class="dynamic-data">${report.date} م</span></span>
           </div>
         </div>
 
-        <div class="divider"></div>
+        <div class="divider" style="margin: 5px 0;"></div>
 
         <div>
           <div class="section-label">إفادة الموظف/ة:</div>
@@ -359,23 +361,23 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
             <span>${gt(gender, 'المكرم مدير المدرسة /', 'المكرمة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span></span>
             <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
           </div>
-          <p style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
-          <p style="font-weight: 700; margin: 5px 0;">أفيدكم أن تأخري كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 35px; margin-bottom: 10px;"></div>
-          <p style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
+          <p style="font-weight: 900; margin: 2px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
+          <p style="font-weight: 700; margin: 2px 0;">أفيدكم أن تأخري كان للأسباب التالية :</p>
+          <div style="border-bottom: 1px dotted black; height: 20px; margin-bottom: 5px;"></div>
+          <p style="font-weight: 700; margin: 2px 0;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
-          <div class="signature-row" style="margin-top: 15px;">
+          <div class="signature-row" style="margin-top: 10px;">
             <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
             <span>التوقيع: ..........................</span>
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
         </div>
 
-        <div style="border: 2px solid black; padding: 10px; margin-top: 10px; background: #fafafa;">
-          <div class="section-label" style="text-decoration: underline;">رأي ${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')}</div>
-          <div class="checkbox-list">
+        <div style="border: 2px solid black; padding: 6px 10px; margin-top: 5px; background: #fafafa;">
+          <div class="section-label" style="text-decoration: underline; margin-bottom: 2px;">رأي ${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')}</div>
+          <div class="checkbox-list" style="margin: 4px 0;">
             <div class="checkbox-item"><span class="checkbox-square"></span> ${gt(gender, 'عذره مقبول', 'عذرها مقبول')}</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> ${gt(gender, 'عذره غير مقبول ويحسم عليه', 'عذرها غير مقبول ويحسم عليها')}</div>
+            <div class="checkbox-item"><span class="checkbox-square"></span> ${report.type === 'مساءلة_حصص' ? gt(gender, 'عذره غير مقبول وتسجل في سجل التأخر والانصراف', 'عذرها غير مقبول وتسجل في سجل التأخر والانصراف') : gt(gender, 'عذره غير مقبول ويحسم عليه', 'عذرها غير مقبول ويحسم عليها')}</div>
           </div>
           <div class="signature-row">
             <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>

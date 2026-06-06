@@ -20,6 +20,7 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedTeacher, setSelectedTeacher] = useState<string>('');
   const [selectedClassesForReport, setSelectedClassesForReport] = useState<ScheduleEntry[]>([]);
+  const [reportDate, setReportDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // حالة التعديل على الحصص
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
@@ -187,7 +188,7 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
     
     const report: Report = {
       employeeId: matchedEmployee.id,
-      date: todayStr,
+      date: reportDate,
       type: 'مساءلة_حصص',
       notes: `غياب عن ${selectedClassesForReport.length} حصص`,
       actionTaken: '',
@@ -411,13 +412,24 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
                     </p>
                   </div>
                 </div>
-                <button 
-                  onClick={handleSaveQuestioningReport}
-                  className="bg-white text-indigo-700 hover:bg-indigo-50 px-8 py-4 rounded-[1.5rem] font-black text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                >
-                  <Save size={18} />
-                  حفظ المساءلة في سجل الموظف
-                </button>
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-[1.5rem] border border-white/20">
+                    <label className="text-xs font-bold text-indigo-100">تاريخ المساءلة:</label>
+                    <input 
+                      type="date" 
+                      value={reportDate} 
+                      onChange={e => setReportDate(e.target.value)} 
+                      className="bg-transparent text-white outline-none font-bold text-sm"
+                    />
+                  </div>
+                  <button 
+                    onClick={handleSaveQuestioningReport}
+                    className="bg-white text-indigo-700 hover:bg-indigo-50 px-8 py-4 rounded-[1.5rem] font-black text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                  >
+                    <Save size={18} />
+                    حفظ المساءلة في سجل الموظف
+                  </button>
+                </div>
               </div>
             )}
             
