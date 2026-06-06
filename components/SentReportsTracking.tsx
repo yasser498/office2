@@ -31,9 +31,10 @@ export const printSignedReport = (report: any, schoolName: string, principalName
         .header { display: flex; justify-content: space-between; margin-bottom: 50px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
         .title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 40px; color: #0f172a; }
         .content { margin-bottom: 30px; font-size: 16px; }
-        .excuse-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-top: 30px; }
-        .signature-box { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .sig-img { max-height: 80px; margin-top: 10px; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+        .content { margin-bottom: 30px; font-size: 16px; }
+        .signature-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; font-weight: 900; }
+        .dynamic-data { font-weight: 900; border-bottom: 1px solid black; padding: 0 5px; }
+        @media print { body { padding: 0; } }
         @media print { body { padding: 0; } }
       </style>
     </head>
@@ -60,19 +61,32 @@ export const printSignedReport = (report: any, schoolName: string, principalName
         <p style="text-align: left;"><strong>مدير المدرسة:</strong> ${principalName}</p>
       </div>
 
-      <div class="excuse-box">
-        <h4 style="margin-top: 0; color: #0f172a;">إفادة الموظف:</h4>
-        <p style="font-weight: bold; color: #334155;">${report.teacherExcuse || 'لم يتم كتابة عذر.'}</p>
+      <div style="border: 2px solid #000; padding: 15px; margin-top: 30px;">
+        <div style="font-weight: 900; text-decoration: underline; margin-bottom: 10px;">إفادة الموظف/ة:</div>
+        <div class="signature-row">
+          <span>المكرم مدير المدرسة / <span class="dynamic-data">${principalName}</span></span>
+          <span>وفقه الله</span>
+        </div>
+        <p style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
+        <p style="font-weight: 700; margin: 5px 0;">أفيدكم أن ${report.type === 'تأخر_انصراف' ? 'تأخري' : 'غيابي'} كان للأسباب التالية :</p>
         
-        <div class="signature-box">
-          <div>
-            <p style="margin: 0; font-weight: bold;">توقيع الموظف (إلكتروني):</p>
-            ${report.teacherSignature ? `<img src="${report.teacherSignature}" class="sig-img" />` : '<p>لا يوجد توقيع</p>'}
-            <p style="font-size: 12px; color: #64748b; margin-top: 5px;">تاريخ الاعتماد: ${report.signedAt ? new Date(report.signedAt).toLocaleDateString('ar-SA') : ''}</p>
-          </div>
-          <div style="text-align: center; border: 2px dashed #10b981; color: #10b981; padding: 10px 20px; border-radius: 8px; font-weight: bold; transform: rotate(-5deg);">
-            مُعتمد إلكترونياً عبر إنجاز الذكي
-          </div>
+        ${report.teacherExcuse ? 
+           `<div style="margin: 10px 0; font-weight: 900; min-height: 40px; font-size: 16px; color: #000; line-height: 2; border-bottom: 1px dotted black; padding-bottom: 5px;">${report.teacherExcuse}</div>` : 
+           `<div style="border-bottom: 1px dotted black; height: 30px; margin-bottom: 10px;"></div>
+            <div style="border-bottom: 1px dotted black; height: 30px; margin-bottom: 10px;"></div>`
+        }
+
+        <p style="font-weight: 700; margin: 10px 0;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
+        
+        <div class="signature-row" style="margin-top: 25px;">
+          <span>الاسم: <span class="dynamic-data">${report.employeeName}</span></span>
+          <span style="display: flex; align-items: center; gap: 10px;">
+            التوقيع: 
+            ${report.teacherSignature ? `<img src="${report.teacherSignature}" style="height: 60px; border-bottom: 1px solid #000;" />` : `..........................`}
+          </span>
+          <span>
+             ${report.signedAt ? `التاريخ: <span class="dynamic-data" style="margin-right: 5px;">${report.signedAt.split('T')[0]} م</span>` : `التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ`}
+          </span>
         </div>
       </div>
       <script>
