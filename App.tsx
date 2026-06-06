@@ -147,10 +147,10 @@ const App: React.FC = () => {
     if (!searchQuery.trim()) return employees;
     const lowerQuery = searchQuery.toLowerCase();
     return employees.filter(emp => 
-      emp.name.toLowerCase().includes(lowerQuery) ||
-      emp.civilId?.toLowerCase().includes(lowerQuery) ||
-      emp.workplace?.toLowerCase().includes(lowerQuery) ||
-      emp.employeeCode?.toLowerCase().includes(lowerQuery)
+      String(emp.name || '').toLowerCase().includes(lowerQuery) ||
+      String(emp.civilId || '').toLowerCase().includes(lowerQuery) ||
+      String(emp.workplace || '').toLowerCase().includes(lowerQuery) ||
+      String(emp.employeeCode || '').toLowerCase().includes(lowerQuery)
     );
   }, [employees, searchQuery]);
 
