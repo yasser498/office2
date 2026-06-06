@@ -10,6 +10,9 @@ import {
   generateAppreciationCertificate,
   generateWarningLetter
 } from '../utils/pdfGenerator';
+import { shareReportToFirebase } from '../utils/firebase';
+import * as dbUtils from '../utils/db';
+import { MessageCircle } from 'lucide-react';
 
 interface HistoryListProps {
   reports: Report[];
@@ -46,6 +49,29 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
 
   const handleUpdateExcuse = async (report: Report, status: 'pending' | 'accepted' | 'rejected') => {
     await onUpdateReport({ ...report, excuseStatus: status });
+  };
+
+  const handleShareWhatsApp = async (report: Report) => {
+    try {
+      const schoolName = await dbUtils.getSetting('schoolName') || '..........';
+      const reportData = {
+        employeeName: selectedEmployee.name,
+        type: report.type,
+        date: report.date,
+        missedClasses: report.missedClasses || null,
+        lateArrivalTime: report.lateArrivalTime || null,
+        schoolName: schoolName
+      };
+      
+      const firebaseId = await shareReportToFirebase(reportData);
+      const link = `${window.location.origin}/?sign=${firebaseId}`;
+      const text = `السلام عليكم أ. ${selectedEmployee.name}،nنأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة (مساءلة) خاصة بكم:nnالرابط: ${link}nnوشكراً لكم.`;
+      
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      await onUpdateReport({ ...report, firebaseId });
+    } catch (e) {
+      alert('حدث خطأ أثناء الاتصال بالخادم. يرجى التأكد من إعدادات Firebase.');
+    }
   };
 
   const handlePrintExitPermit = () => {
@@ -224,6 +250,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
                   </div>
                   
                   <div className="flex items-center gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => handleShareWhatsApp(report)}
+                      className="p-2 text-blue-500 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-colors"
+                      title="إرسال عبر الواتساب"
+                    >
+                      <MessageCircle size={16} />
+                    </button>
                     <button 
                       onClick={() => {
                         if (report.type === 'غياب' || report.type === 'غياب_حصة') generateOfficialAbsenceForm(selectedEmployee, report);

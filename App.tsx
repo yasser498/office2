@@ -1,4 +1,4 @@
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin, Calendar, Menu, X } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin, Calendar, Menu, X, MessageCircle } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
@@ -7,6 +7,8 @@ import DailyLog from './components/DailyLog';
 import StatisticsView from './components/StatisticsView';
 import EmployeeManualForm from './components/EmployeeManualForm';
 import ScheduleQuestioning from './components/ScheduleQuestioning';
+import SentReportsTracking from './components/SentReportsTracking';
+import SignReport from './components/SignReport';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 import React, { useState, useEffect, useMemo } from 'react';
@@ -25,7 +27,7 @@ const App: React.FC = () => {
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
-  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics' | 'schedule_questioning'>('employees');
+  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics' | 'schedule_questioning' | 'tracking'>('employees');
   
   const [tempEmployeeData, setTempEmployeeData] = useState<Employee | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -154,6 +156,13 @@ const App: React.FC = () => {
     );
   }, [employees, searchQuery]);
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const signId = urlParams.get('sign');
+
+  if (signId) {
+    return <SignReport reportId={signId} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f7f6] overflow-x-hidden selection:bg-emerald-200 selection:text-emerald-900 font-sans text-slate-800">
       
@@ -239,6 +248,12 @@ const App: React.FC = () => {
                   <BarChart3 size={20} className={viewMode === 'statistics' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
                 </div>
                 الإحصائيات والتحليل
+              </button>
+              <button onClick={() => setViewMode('tracking')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'tracking' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'tracking' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
+                  <MessageCircle size={20} className={viewMode === 'tracking' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
+                </div>
+                متابعة المساءلات
               </button>
             </nav>
 
@@ -343,6 +358,8 @@ const App: React.FC = () => {
               <ScheduleQuestioning employees={employees} onSaveReport={handleSaveReportBatch} />
             ) : viewMode === 'daily_log' ? (
               <DailyLog employees={employees} reports={allReports} onDeleteReport={handleDeleteReport} />
+            ) : viewMode === 'tracking' ? (
+              <SentReportsTracking />
             ) : (
               <StatisticsView reports={allReports} employees={employees} />
             )}

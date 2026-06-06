@@ -38,6 +38,7 @@ export interface Report {
 
   // حقول جديدة
   excuseStatus?: 'pending' | 'accepted' | 'rejected';
+  firebaseId?: string;
   missedClasses?: ScheduleEntry[];
 }
 
