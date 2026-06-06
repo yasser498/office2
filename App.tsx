@@ -9,13 +9,14 @@ import EmployeeManualForm from './components/EmployeeManualForm';
 import ScheduleQuestioning from './components/ScheduleQuestioning';
 import SentReportsTracking from './components/SentReportsTracking';
 import SignReport from './components/SignReport';
+import SettingsView from './components/SettingsView';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 import { formatPhoneNumber } from './utils/phoneFormatter';
 import React, { useState, useEffect, useMemo } from 'react';
 
 const App: React.FC = () => {
-  const { employees, loading, importEmployees, addManualEmployee, getReports, saveReport, removeReport, resetData, refresh } = useEmployeeDB();
+  const { employees, loading, importEmployees, addManualEmployee, getReports, saveReport, removeReport, resetData, clearEmployeesOnly, clearReportsOnly, refresh } = useEmployeeDB();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [employeeReports, setEmployeeReports] = useState<Report[]>([]);
   const [allReports, setAllReports] = useState<Report[]>([]);
@@ -28,7 +29,7 @@ const App: React.FC = () => {
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
-  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics' | 'schedule_questioning' | 'tracking'>('employees');
+  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics' | 'schedule_questioning' | 'tracking' | 'settings'>('employees');
   
   const [tempEmployeeData, setTempEmployeeData] = useState<Employee | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -260,6 +261,12 @@ const App: React.FC = () => {
                 </div>
                 متابعة المساءلات
               </button>
+              <button onClick={() => setViewMode('settings')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'settings' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'settings' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
+                  <Settings size={20} className={viewMode === 'settings' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
+                </div>
+                إعدادات النظام
+              </button>
             </nav>
 
             {viewMode === 'employees' && (
@@ -278,7 +285,9 @@ const App: React.FC = () => {
 
           {/* Main Content Area */}
           <section className="lg:col-span-9">
-            {viewMode === 'employees' ? (
+            {viewMode === 'settings' ? (
+              <SettingsView onClearEmployees={clearEmployeesOnly} onClearReports={clearReportsOnly} />
+            ) : viewMode === 'employees' ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Search & List Card */}
                 <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border border-slate-100 relative overflow-hidden">

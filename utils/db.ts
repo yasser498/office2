@@ -98,6 +98,21 @@ export const deleteEmployeeData = async () => {
   await tx.done;
 };
 
+export const clearAllEmployeesOnly = async () => {
+  const db = await initDB();
+  const tx = db.transaction('employees', 'readwrite');
+  await tx.objectStore('employees').clear();
+  await tx.done;
+};
+
+export const clearAllReportsOnly = async () => {
+  const db = await initDB();
+  const tx = db.transaction('reports', 'readwrite');
+  await tx.objectStore('reports').clear();
+  await tx.done;
+};
+
+
 export const setSetting = async (key: string, value: any) => {
   const db = await initDB();
   return db.put('settings', value, key);

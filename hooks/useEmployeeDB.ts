@@ -54,6 +54,15 @@ export const useEmployeeDB = () => {
     await fetchEmployees();
   };
 
+  const clearEmployeesOnly = async () => {
+    await dbUtils.clearAllEmployeesOnly();
+    await fetchEmployees();
+  };
+
+  const clearReportsOnly = async () => {
+    await dbUtils.clearAllReportsOnly();
+  };
+
   return {
     employees,
     loading,
@@ -63,6 +72,8 @@ export const useEmployeeDB = () => {
     saveReport,
     removeReport,
     resetData,
+    clearEmployeesOnly,
+    clearReportsOnly,
     refresh: fetchEmployees
   };
 };

@@ -83,3 +83,14 @@ export const getAllSharedReports = async () => {
     return [];
   }
 };
+
+// Function to delete all shared reports from Firebase (Admin/Settings)
+export const deleteAllFirebaseReports = async () => {
+  try {
+    const reportsRef = ref(db, 'shared_reports');
+    await set(reportsRef, null);
+  } catch (e) {
+    console.error("Error deleting all firebase reports: ", e);
+    throw e;
+  }
+};
