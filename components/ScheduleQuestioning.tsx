@@ -18,9 +18,11 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
   const [selectedSession, setSelectedSession] = useState<string>('');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
-  const [selectedTeacher, setSelectedTeacher] = useState<string>('');
-
   const [selectedClassesForReport, setSelectedClassesForReport] = useState<ScheduleEntry[]>([]);
+
+  // حالة التعديل على الحصص
+  const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
+  const [editedRowData, setEditedRowData] = useState<ScheduleEntry | null>(null);
 
   // تحميل الجدول من قاعدة البيانات وتحديد اليوم الافتراضي
   React.useEffect(() => {
@@ -138,6 +140,24 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
       if (exists) return prev.filter(p => p !== exists);
       return [...prev, entry];
     });
+  };
+
+  const handleDeleteRow = async (index: number) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الحصة؟')) return;
+    const newData = [...scheduleData];
+    newData.splice(index, 1);
+    setScheduleData(newData);
+    await dbUtils.saveSchedule(newData);
+  };
+
+  const handleSaveEditedRow = async (index: number) => {
+    if (!editedRowData) return;
+    const newData = [...scheduleData];
+    newData[index] = editedRowData;
+    setScheduleData(newData);
+    await dbUtils.saveSchedule(newData);
+    setEditingRowIndex(null);
+    setEditedRowData(null);
   };
 
   const handleSaveQuestioningReport = async () => {
@@ -316,27 +336,53 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
                     <th className="p-4">الحصة</th>
                     <th className="p-4">الصف</th>
                     <th className="p-4">الفصل</th>
+                    <th className="p-4 text-center">إجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 text-sm font-bold text-slate-700">
-                  {filteredData.slice(0, 100).map((row, idx) => {
+                  {filteredData.slice(0, 100).map((row, _idx) => {
+                    const originalIndex = scheduleData.indexOf(row);
                     const isSelected = selectedClassesForReport.some(p => p.session === row.session && p.day === row.day && p.teacher === row.teacher);
+                    const isEditing = editingRowIndex === originalIndex;
+
                     return (
                       <tr 
-                        key={idx} 
-                        className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${isSelected ? 'bg-indigo-50' : ''}`}
-                        onClick={() => toggleClassSelection(row)}
+                        key={originalIndex} 
+                        className={`hover:bg-indigo-50/50 transition-colors ${isSelected ? 'bg-indigo-50' : ''}`}
                       >
-                        <td className="p-4">
+                        <td className="p-4 cursor-pointer" onClick={() => !isEditing && toggleClassSelection(row)}>
                           <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-md' : 'border-2 border-slate-300'}`}>
                             {isSelected && <CheckCircle size={14} />}
                           </div>
                         </td>
-                        <td className="p-4">{row.teacher}</td>
-                        <td className="p-4"><span className="bg-slate-100 px-2 py-1 rounded-lg text-slate-600 text-[10px]">{row.subject}</span></td>
-                        <td className="p-4">{row.session}</td>
-                        <td className="p-4">{row.grade}</td>
-                        <td className="p-4">{row.section}</td>
+                        <td className="p-4">
+                          {isEditing ? <input value={editedRowData?.teacher || ''} onChange={(e) => setEditedRowData({...editedRowData!, teacher: e.target.value})} className="w-full p-1 text-xs border rounded" /> : row.teacher}
+                        </td>
+                        <td className="p-4">
+                          {isEditing ? <input value={editedRowData?.subject || ''} onChange={(e) => setEditedRowData({...editedRowData!, subject: e.target.value})} className="w-full p-1 text-xs border rounded" /> : <span className="bg-slate-100 px-2 py-1 rounded-lg text-slate-600 text-[10px]">{row.subject}</span>}
+                        </td>
+                        <td className="p-4">
+                          {isEditing ? <input value={editedRowData?.session || ''} onChange={(e) => setEditedRowData({...editedRowData!, session: e.target.value})} className="w-full p-1 text-xs border rounded" /> : row.session}
+                        </td>
+                        <td className="p-4">
+                          {isEditing ? <input value={editedRowData?.grade || ''} onChange={(e) => setEditedRowData({...editedRowData!, grade: e.target.value})} className="w-full p-1 text-xs border rounded" /> : row.grade}
+                        </td>
+                        <td className="p-4">
+                          {isEditing ? <input value={editedRowData?.section || ''} onChange={(e) => setEditedRowData({...editedRowData!, section: e.target.value})} className="w-full p-1 text-xs border rounded" /> : row.section}
+                        </td>
+                        <td className="p-4 text-center">
+                          {isEditing ? (
+                            <div className="flex justify-center gap-2">
+                              <button onClick={() => handleSaveEditedRow(originalIndex)} className="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded hover:bg-emerald-100">حفظ</button>
+                              <button onClick={() => setEditingRowIndex(null)} className="text-xs bg-slate-50 text-slate-600 px-2 py-1 rounded hover:bg-slate-100">إلغاء</button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-center gap-2">
+                              <button onClick={() => { setEditingRowIndex(originalIndex); setEditedRowData(row); }} className="text-xs text-indigo-500 hover:text-indigo-700 hover:underline">تعديل</button>
+                              <button onClick={() => handleDeleteRow(originalIndex)} className="text-xs text-rose-500 hover:text-rose-700 hover:underline">حذف</button>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
