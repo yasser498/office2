@@ -1,0 +1,5 @@
+{
+  "name": "Employee Management & Reporting Hub",
+  "description": "A local-first application to manage employee data, track attendance/violations using IndexedDB, and generate PDF reports from uploaded Excel/CSV files.",
+  "requestFramePermissions": []
+}
