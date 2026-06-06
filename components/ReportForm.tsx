@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Report, Employee, ReportType } from '../types';
 import { Send, FileText, Clock, Users, X, UserCheck, LogOut, Calendar, AlertCircle } from 'lucide-react';
@@ -72,7 +71,6 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
     e.preventDefault();
     if (selectedEmployees.length === 0) return;
 
-    // فحص إضافي قبل الإرسال
     if (formData.type === 'غياب' && new Date(formData.endDate!) < new Date(formData.date)) {
       alert("يرجى تصحيح التاريخ: تاريخ النهاية يسبق تاريخ البداية!");
       return;
@@ -101,7 +99,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           earlyDepartureTime: ''
         });
       }
-      alert(editingReport ? 'تم تحديث التقرير' : `تم إنشاء ${selectedEmployees.length} تقارير بنجاح`);
+      alert(editingReport ? 'تم تحديث التقرير' : \`تم إنشاء \${selectedEmployees.length} تقارير بنجاح\`);
     } catch (err) {
       alert('فشل حفظ التقارير');
     } finally {
@@ -110,31 +108,34 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
   };
 
   return (
-    <div className={`bg-white p-5 md:p-8 rounded-[2.5rem] shadow-2xl border transition-all ${editingReport ? 'border-indigo-400 ring-8 ring-indigo-50' : 'border-slate-100'}`}>
+    <div className={\`bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border transition-all duration-300 \${editingReport ? 'border-emerald-400 ring-4 ring-emerald-50 scale-[1.01]' : 'border-slate-100 hover:shadow-2xl hover:border-emerald-100'}\`}>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl ${editingReport ? 'bg-indigo-600 text-white animate-pulse' : 'bg-indigo-50 text-indigo-600'}`}>
+          <div className={\`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-md \${editingReport ? 'bg-emerald-600 text-white animate-pulse' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}\`}>
             <FileText size={28} />
           </div>
           <div>
             <h3 className="text-2xl font-black text-slate-800">{editingReport ? 'تعديل بيانات التقرير' : 'إنشاء سجل حالة جديد'}</h3>
-            <div className="flex items-center gap-2 text-indigo-600 text-sm font-black mt-1">
+            <div className="flex items-center gap-2 text-emerald-600 text-sm font-black mt-1">
               <UserCheck size={16} />
               <span>المستهدفون: {selectedEmployees.length} موظفاً</span>
             </div>
           </div>
         </div>
         {editingReport && (
-          <button onClick={onCancelEdit} className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all">
+          <button onClick={onCancelEdit} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all bg-slate-50 border border-slate-100">
             <X size={24} />
           </button>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2.5 mb-8">
+      <div className="flex flex-wrap gap-2 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <span className="text-sm font-bold text-slate-500 ml-2 py-1.5 flex items-center gap-2">
+          <Users size={16} /> الموظفون:
+        </span>
         {selectedEmployees.map(emp => (
-          <span key={emp.id} className="bg-white text-indigo-700 px-4 py-1.5 rounded-xl text-xs font-black border border-indigo-100 shadow-sm animate-in zoom-in-50 duration-300 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
+          <span key={emp.id} className="bg-white text-emerald-700 px-4 py-1.5 rounded-xl text-xs font-black border border-emerald-100 shadow-sm animate-in zoom-in-50 duration-300 flex items-center gap-2 hover:bg-emerald-50 cursor-default">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
             {emp.name}
           </span>
         ))}
@@ -147,122 +148,137 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as ReportType })}
-              className="w-full px-5 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 transition-all bg-slate-50 font-black text-slate-700 appearance-none"
+              className="w-full px-5 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700 appearance-none"
             >
-              <option value="غياب">غياب (مساءلة)</option>
-              <option value="تأخر_انصراف">تنبيه تأخر / انصراف</option>
+              <option value="غياب">غياب يوم كامل أو أكثر</option>
+              <option value="تأخر">تأخر صباحي</option>
+              <option value="غياب_حصة">غياب عن حصة</option>
+              <option value="انصراف">انصراف مبكر</option>
             </select>
           </div>
 
           <div className="space-y-2 lg:col-span-3">
             <label className="text-sm font-black text-slate-700 mr-2">تاريخ البداية (من)</label>
             <div className="relative">
+              <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
               <input
                 type="date"
-                required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 font-black text-slate-700"
+                className="w-full pl-4 pr-12 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700"
+                required
               />
             </div>
           </div>
 
-          {formData.type === 'غياب' ? (
-            <>
-              <div className="space-y-2 lg:col-span-3">
-                <label className="text-sm font-black text-slate-700 mr-2">تاريخ النهاية (إلى)</label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    className={`w-full px-5 py-3.5 bg-slate-50 border rounded-2xl outline-none focus:ring-4 font-black transition-all ${dateError ? 'border-rose-300 focus:ring-rose-50 text-rose-600' : 'border-slate-200 focus:ring-indigo-100 text-slate-700'}`}
-                  />
-                </div>
-              </div>
-
-              <div className="lg:col-span-3 flex flex-col justify-end">
-                <div className={`p-4 rounded-2xl flex items-center gap-4 border transition-all ${dateError ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-emerald-50 border-emerald-100 text-emerald-700'}`}>
-                  {dateError ? <AlertCircle size={24} /> : <Calendar size={24} />}
-                  <div>
-                    <p className="text-[10px] font-black uppercase opacity-60">إجمالي المدة</p>
-                    <p className="text-xl font-black">{formData.daysCount > 0 ? `${formData.daysCount} أيام` : '---'}</p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="space-y-2 lg:col-span-2">
-                <label className="text-sm font-black text-slate-700 mr-2 flex items-center gap-1"><Clock size={14}/> وقت الحضور</label>
+          {formData.type === 'غياب' && (
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in zoom-in-95">
+              <label className="text-sm font-black text-slate-700 mr-2">تاريخ النهاية (إلى)</label>
+              <div className="relative">
+                <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
                 <input
-                  type="time"
-                  value={formData.lateArrivalTime}
-                  onChange={(e) => setFormData({ ...formData, lateArrivalTime: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 font-black text-slate-700"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  className={\`w-full pl-4 pr-12 py-3.5 border rounded-2xl outline-none focus:ring-4 transition-all bg-slate-50 font-black text-slate-700 \${dateError ? 'border-rose-400 focus:ring-rose-100 text-rose-600' : 'border-slate-200 focus:ring-emerald-100 focus:border-emerald-400'}\`}
+                  required
                 />
               </div>
-              <div className="space-y-2 lg:col-span-2">
-                <label className="text-sm font-black text-slate-700 mr-2 flex items-center gap-1"><LogOut size={14}/> وقت الانصراف</label>
+            </div>
+          )}
+
+          {formData.type === 'غياب' && (
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in">
+               <label className="text-sm font-black text-slate-700 mr-2">عدد الأيام</label>
+               <div className={\`w-full px-5 py-3.5 border rounded-2xl font-black text-lg text-center shadow-inner \${dateError ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}\`}>
+                  {formData.daysCount} <span className="text-sm font-bold opacity-70">يوم</span>
+               </div>
+            </div>
+          )}
+
+          {dateError && formData.type === 'غياب' && (
+             <div className="lg:col-span-12 flex items-center gap-2 text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 animate-in slide-in-from-top-2">
+                <AlertCircle size={20} />
+                <p className="font-bold text-sm">{dateError}</p>
+             </div>
+          )}
+
+          {formData.type === 'تأخر' && (
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in">
+              <label className="text-sm font-black text-slate-700 mr-2">وقت التأخر (دقيقة)</label>
+              <div className="relative">
+                <Clock className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="مثال: 15"
+                  value={formData.lateArrivalTime}
+                  onChange={(e) => setFormData({ ...formData, lateArrivalTime: e.target.value })}
+                  className="w-full pl-4 pr-12 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {formData.type === 'انصراف' && (
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in">
+              <label className="text-sm font-black text-slate-700 mr-2">وقت الانصراف المبكر</label>
+              <div className="relative">
+                <LogOut className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
                 <input
                   type="time"
                   value={formData.earlyDepartureTime}
                   onChange={(e) => setFormData({ ...formData, earlyDepartureTime: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-rose-100 font-black text-slate-700"
+                  className="w-full pl-4 pr-12 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700"
+                  required
                 />
               </div>
-              <div className="space-y-2 lg:col-span-2">
-                <label className="text-sm font-black text-slate-700 mr-2 flex items-center gap-1"><Users size={14}/> الحصة</label>
-                <select
-                  value={formData.absenceSession}
-                  onChange={(e) => setFormData({ ...formData, absenceSession: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 font-black text-slate-700 appearance-none"
-                >
-                  <option value="">-- اختر --</option>
-                  {sessions.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-            </>
+            </div>
+          )}
+
+          {formData.type === 'غياب_حصة' && (
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in">
+              <label className="text-sm font-black text-slate-700 mr-2">الحصة المفقودة</label>
+              <select
+                value={formData.absenceSession}
+                onChange={(e) => setFormData({ ...formData, absenceSession: e.target.value })}
+                className="w-full px-5 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700 appearance-none"
+                required
+              >
+                <option value="">-- اختر الحصة --</option>
+                {sessions.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
           )}
         </div>
 
-        {dateError && (
-          <div className="bg-rose-50 text-rose-600 p-4 rounded-2xl flex items-center gap-3 animate-bounce border border-rose-100">
-            <AlertCircle size={20} />
-            <span className="font-black text-sm">{dateError}</span>
-          </div>
-        )}
-
         <div className="space-y-2">
-          <label className="text-sm font-black text-slate-700 mr-2">الأسباب / ملاحظات إضافية (تظهر في المطبوع)</label>
+          <label className="text-sm font-black text-slate-700 mr-2">ملاحظات إضافية (اختياري)</label>
           <textarea
-            rows={3}
             value={formData.notes}
-            placeholder="اكتب الأسباب والظروف هنا..."
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-[1.8rem] outline-none focus:ring-4 focus:ring-indigo-100 transition-all resize-none font-bold text-slate-700 placeholder:text-slate-300"
+            className="w-full p-5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-bold text-slate-700 resize-none"
+            rows={3}
+            placeholder="اكتب أي تفاصيل أخرى هنا..."
           />
         </div>
 
-        <div className="flex gap-4 pt-4">
+        <div className="flex justify-end pt-4 border-t border-slate-100">
           <button
             type="submit"
-            disabled={isSubmitting || selectedEmployees.length === 0 || !!dateError}
-            className={`flex-1 flex items-center justify-center gap-3 py-5 rounded-[2rem] font-black text-xl transition-all shadow-2xl active:scale-[0.98] text-white ${editingReport ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100' : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none shadow-indigo-200'}`}
+            disabled={isSubmitting || (formData.type === 'غياب' && !!dateError)}
+            className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white px-10 py-4 rounded-2xl font-black text-lg transition-all shadow-lg shadow-emerald-200 active:scale-95 flex items-center justify-center gap-3 w-full md:w-auto min-w-[200px]"
           >
-            <Send size={24} />
-            {isSubmitting ? 'جاري الحفظ...' : editingReport ? 'تحديث السجل الحالي' : `تطبيق على ${selectedEmployees.length} موظفاً`}
+            {isSubmitting ? (
+              <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <>
+                <Send size={20} />
+                {editingReport ? 'حفظ التعديلات' : 'تسجيل الحالة وإصدار التقرير'}
+              </>
+            )}
           </button>
-          
-          {editingReport && (
-            <button
-              type="button"
-              onClick={onCancelEdit}
-              className="px-10 py-5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-[2rem] font-black transition-all"
-            >
-              إلغاء
-            </button>
-          )}
         </div>
       </form>
     </div>
