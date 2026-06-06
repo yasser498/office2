@@ -157,7 +157,6 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           <div className="space-y-2 lg:col-span-3">
             <label className="text-sm font-black text-slate-700 mr-2">تاريخ البداية (من)</label>
             <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
                 type="date"
                 required
@@ -173,7 +172,6 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
               <div className="space-y-2 lg:col-span-3">
                 <label className="text-sm font-black text-slate-700 mr-2">تاريخ النهاية (إلى)</label>
                 <div className="relative">
-                  <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 ${dateError ? 'text-rose-500' : 'text-slate-400'}`} size={18} />
                   <input
                     type="date"
                     value={formData.endDate}

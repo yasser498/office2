@@ -18,6 +18,7 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
   const [selectedSession, setSelectedSession] = useState<string>('');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedTeacher, setSelectedTeacher] = useState<string>('');
   const [selectedClassesForReport, setSelectedClassesForReport] = useState<ScheduleEntry[]>([]);
 
   // حالة التعديل على الحصص
