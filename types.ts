@@ -40,6 +40,9 @@ export interface Report {
   excuseStatus?: 'pending' | 'accepted' | 'rejected';
   firebaseId?: string;
   missedClasses?: ScheduleEntry[];
+  teacherExcuse?: string;
+  teacherSignature?: string;
+  signedAt?: string;
 }
 
 export interface ScheduleEntry {

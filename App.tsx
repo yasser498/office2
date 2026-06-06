@@ -10,6 +10,7 @@ import ScheduleQuestioning from './components/ScheduleQuestioning';
 import SentReportsTracking from './components/SentReportsTracking';
 import SignReport from './components/SignReport';
 import SettingsView from './components/SettingsView';
+import { getAllSharedReports } from './utils/firebase';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 import { formatPhoneNumber } from './utils/phoneFormatter';
@@ -46,6 +47,37 @@ const App: React.FC = () => {
     try {
       const reports = await dbUtils.getAllReports();
       setAllReports(reports);
+
+      try {
+        const shared = await getAllSharedReports();
+        let updated = false;
+        const updatedReports = [...reports];
+        
+        for (const sReport of shared) {
+          if (sReport.status === 'signed' && sReport.firebaseId) {
+            const localIndex = updatedReports.findIndex(r => r.firebaseId === sReport.firebaseId);
+            if (localIndex !== -1) {
+              const localReport = updatedReports[localIndex];
+              if (!localReport.teacherSignature && sReport.teacherSignature) {
+                const updatedReport = {
+                  ...localReport,
+                  teacherExcuse: sReport.teacherExcuse,
+                  teacherSignature: sReport.teacherSignature,
+                  signedAt: sReport.signedAt,
+                };
+                await dbUtils.updateReport(updatedReport);
+                updatedReports[localIndex] = updatedReport;
+                updated = true;
+              }
+            }
+          }
+        }
+        if (updated) {
+          setAllReports(updatedReports);
+        }
+      } catch (syncError) {
+        console.error('Error syncing with firebase:', syncError);
+      }
     } catch (error) {
       console.error('Error fetching all reports:', error);
     }
