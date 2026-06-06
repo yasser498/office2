@@ -52,6 +52,9 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
   };
 
   const handleShareWhatsApp = async (report: Report) => {
+    // Open window synchronously to bypass popup blockers
+    const newWindow = window.open('', '_blank');
+    
     try {
       const schoolName = await dbUtils.getSetting('schoolName') || '..........';
       const reportData = {
@@ -69,9 +72,17 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
       const text = `السلام عليكم أ. ${selectedEmployee.name}،\nنأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة (مساءلة) خاصة بكم:\n\nالرابط: ${link}\n\nوشكراً لكم.`;
       
       const phoneParam = selectedEmployee.phone ? `${selectedEmployee.phone}?` : '?';
-      window.open(`https://wa.me/${phoneParam}text=${encodeURIComponent(text)}`, '_blank');
+      const whatsappUrl = `https://wa.me/${phoneParam}text=${encodeURIComponent(text)}`;
+      
+      if (newWindow) {
+        newWindow.location.href = whatsappUrl;
+      } else {
+        window.location.href = whatsappUrl; // fallback if blocked
+      }
+      
       await onUpdateReport({ ...report, firebaseId });
     } catch (e) {
+      if (newWindow) newWindow.close();
       alert('حدث خطأ أثناء الاتصال بالخادم. يرجى التأكد من إعدادات Firebase.');
     }
   };
