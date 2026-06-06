@@ -27,25 +27,29 @@ const SentReportsTracking: React.FC<SentReportsTrackingProps> = ({ employees }) 
     window.open(`https://wa.me/${phoneParam}text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const handlePrint = (report: any) => {
-    let employee = employees.find(e => e.name === report.employeeName);
-    if (!employee) {
-      // Fallback if employee is deleted
-      employee = {
-        id: '',
-        name: report.employeeName,
-        civilId: '',
-        phone: report.employeePhone || '',
-        employeeCode: '',
-        specialization: '',
-        workplace: ''
-      };
-    }
-    
-    if (report.type === 'غياب') {
-      generateOfficialAbsenceForm(employee, report);
-    } else {
-      generateLateArrivalDepartureForm(employee, report);
+  const handlePrint = async (report: any) => {
+    try {
+      let employee = employees.find(e => e.name === report.employeeName);
+      if (!employee) {
+        employee = {
+          id: 0,
+          name: report.employeeName,
+          civilId: '',
+          phone: report.employeePhone || '',
+          employeeCode: '',
+          specialization: '',
+          workplace: ''
+        };
+      }
+      
+      if (report.type === 'غياب') {
+        await generateOfficialAbsenceForm(employee, report);
+      } else {
+        await generateLateArrivalDepartureForm(employee, report);
+      }
+    } catch (e: any) {
+      alert("حدث خطأ أثناء الطباعة: " + e.message);
+      console.error(e);
     }
   };
 

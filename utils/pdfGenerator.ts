@@ -219,13 +219,15 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
 
           <p class="small-text-7" style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
-          <div class="signature-row small-text-7" style="margin-top: 15px; position: relative; align-items: flex-end; min-height: 40px;">
-            <span style="z-index: 2;">الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center; width: 200px; bottom: 0;">
-              <span style="z-index: 2; position: relative; background: #fff; padding: 0 5px;">التوقيع: ${!report.teacherSignature ? '...................' : ''}</span>
-              ${report.teacherSignature ? `<img src="${report.teacherSignature}" style="position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; height: 50px; z-index: 1;" />` : ''}
+          <div class="signature-row small-text-7" style="margin-top: 15px; align-items: flex-end;">
+            <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
+            <span style="display: flex; align-items: flex-end; gap: 5px;">
+              <span>التوقيع:</span>
+              ${report.teacherSignature ? 
+                `<span style="border-bottom: 1px solid #000; display: inline-block; padding: 0 20px;"><img src="${report.teacherSignature}" style="height: 40px; vertical-align: bottom; margin-bottom: 2px;" /></span>` : 
+                `<span>..........................</span>`}
             </span>
-            <span style="z-index: 2; background: #fff; padding: 0 5px;">
+            <span>
                ${report.signedAt ? `التاريخ: <span class="dynamic-data" style="margin-right: 5px;">${report.signedAt.split('T')[0]} م</span>` : `التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ`}
             </span>
           </div>
@@ -390,13 +392,15 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
 
           <p style="font-weight: 700; margin: 2px 0;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
-          <div class="signature-row" style="margin-top: 15px; position: relative; align-items: flex-end; min-height: 40px;">
-            <span style="z-index: 2;">الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center; width: 200px; bottom: 0;">
-              <span style="z-index: 2; position: relative; background: #fff; padding: 0 5px;">التوقيع: ${!report.teacherSignature ? '..........................' : ''}</span>
-              ${report.teacherSignature ? `<img src="${report.teacherSignature}" style="position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; height: 50px; z-index: 1;" />` : ''}
+          <div class="signature-row" style="margin-top: 15px; align-items: flex-end;">
+            <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
+            <span style="display: flex; align-items: flex-end; gap: 5px;">
+              <span>التوقيع:</span>
+              ${report.teacherSignature ? 
+                `<span style="border-bottom: 1px solid #000; display: inline-block; padding: 0 20px;"><img src="${report.teacherSignature}" style="height: 40px; vertical-align: bottom; margin-bottom: 2px;" /></span>` : 
+                `<span>..........................</span>`}
             </span>
-            <span style="z-index: 2; background: #fff; padding: 0 5px;">
+            <span>
                ${report.signedAt ? `التاريخ: <span class="dynamic-data" style="margin-right: 5px;">${report.signedAt.split('T')[0]} م</span>` : `التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ`}
             </span>
           </div>
