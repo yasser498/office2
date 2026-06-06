@@ -99,7 +99,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           earlyDepartureTime: ''
         });
       }
-      alert(editingReport ? 'تم تحديث التقرير' : \`تم إنشاء \${selectedEmployees.length} تقارير بنجاح\`);
+      alert(editingReport ? 'تم تحديث التقرير' : `تم إنشاء ${selectedEmployees.length} تقارير بنجاح`);
     } catch (err) {
       alert('فشل حفظ التقارير');
     } finally {
@@ -108,10 +108,10 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
   };
 
   return (
-    <div className={\`bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border transition-all duration-300 \${editingReport ? 'border-emerald-400 ring-4 ring-emerald-50 scale-[1.01]' : 'border-slate-100 hover:shadow-2xl hover:border-emerald-100'}\`}>
+    <div className={`bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border transition-all duration-300 ${editingReport ? 'border-emerald-400 ring-4 ring-emerald-50 scale-[1.01]' : 'border-slate-100 hover:shadow-2xl hover:border-emerald-100'}`}>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className={\`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-md \${editingReport ? 'bg-emerald-600 text-white animate-pulse' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}\`}>
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-md ${editingReport ? 'bg-emerald-600 text-white animate-pulse' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
             <FileText size={28} />
           </div>
           <div>
@@ -180,7 +180,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  className={\`w-full pl-4 pr-12 py-3.5 border rounded-2xl outline-none focus:ring-4 transition-all bg-slate-50 font-black text-slate-700 \${dateError ? 'border-rose-400 focus:ring-rose-100 text-rose-600' : 'border-slate-200 focus:ring-emerald-100 focus:border-emerald-400'}\`}
+                  className={`w-full pl-4 pr-12 py-3.5 border rounded-2xl outline-none focus:ring-4 transition-all bg-slate-50 font-black text-slate-700 ${dateError ? 'border-rose-400 focus:ring-rose-100 text-rose-600' : 'border-slate-200 focus:ring-emerald-100 focus:border-emerald-400'}`}
                   required
                 />
               </div>
@@ -190,7 +190,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           {formData.type === 'غياب' && (
             <div className="space-y-2 lg:col-span-3 animate-in fade-in">
                <label className="text-sm font-black text-slate-700 mr-2">عدد الأيام</label>
-               <div className={\`w-full px-5 py-3.5 border rounded-2xl font-black text-lg text-center shadow-inner \${dateError ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}\`}>
+               <div className={`w-full px-5 py-3.5 border rounded-2xl font-black text-lg text-center shadow-inner ${dateError ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
                   {formData.daysCount} <span className="text-sm font-bold opacity-70">يوم</span>
                </div>
             </div>

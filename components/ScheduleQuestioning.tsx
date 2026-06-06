@@ -171,7 +171,7 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
     });
 
     if (!matchedEmployee) {
-      alert(\`لم يتم العثور على الموظف "\${teacherName}" في قائمة الموظفين. يرجى إضافته أولاً.\`);
+      alert(`لم يتم العثور على الموظف "${teacherName}" في قائمة الموظفين. يرجى إضافته أولاً.`);
       return;
     }
 
@@ -181,7 +181,7 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
       employeeId: matchedEmployee.id,
       date: reportDate,
       type: 'مساءلة_حصص',
-      notes: \`غياب عن \${selectedClassesForReport.length} حصص\`,
+      notes: `غياب عن ${selectedClassesForReport.length} حصص`,
       actionTaken: '',
       excuseStatus: 'pending',
       missedClasses: selectedClassesForReport,
@@ -236,11 +236,11 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
                 <select 
                   value={selectedDay} 
                   onChange={(e) => setSelectedDay(e.target.value)}
-                  className={\`w-full px-4 py-3 rounded-xl border outline-none font-bold transition-all \${
+                  className={`w-full px-4 py-3 rounded-xl border outline-none font-bold transition-all ${
                     selectedDay !== ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'][new Date().getDay()] 
                       ? 'border-amber-300 bg-amber-50 text-amber-700 focus:ring-4 focus:ring-amber-100' 
                       : 'border-slate-200 bg-white focus:ring-4 focus:ring-emerald-100'
-                  }\`}
+                  }`}
                 >
                   <option value="">الكل</option>
                   {getUniqueValues('day').map(day => <option key={day} value={day}>{day}</option>)}
@@ -300,9 +300,9 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
                     const isEditing = editingRowIndex === originalIndex;
 
                     return (
-                      <tr key={originalIndex} className={\`hover:bg-emerald-50/50 transition-colors \${isSelected ? 'bg-emerald-50' : ''}\`}>
+                      <tr key={originalIndex} className={`hover:bg-emerald-50/50 transition-colors ${isSelected ? 'bg-emerald-50' : ''}`}>
                         <td className="p-4 text-center cursor-pointer" onClick={() => !isEditing && toggleClassSelection(row)}>
-                          <div className={\`w-6 h-6 mx-auto rounded-lg flex items-center justify-center transition-all \${isSelected ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200' : 'border-2 border-slate-300 hover:border-emerald-400'}\`}>
+                          <div className={`w-6 h-6 mx-auto rounded-lg flex items-center justify-center transition-all ${isSelected ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200' : 'border-2 border-slate-300 hover:border-emerald-400'}`}>
                             {isSelected && <CheckCircle size={16} />}
                           </div>
                         </td>

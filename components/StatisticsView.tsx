@@ -170,7 +170,7 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
             {stats.topEmployees.map((item, index) => (
               <div key={item.employee!.id} className="flex items-center justify-between p-4 bg-slate-50 hover:bg-emerald-50/50 rounded-2xl border border-slate-100 transition-colors group">
                 <div className="flex items-center gap-4">
-                  <div className={\`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm \${index < 3 ? 'bg-amber-100 text-amber-600' : 'bg-white text-slate-400 shadow-sm'}\`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${index < 3 ? 'bg-amber-100 text-amber-600' : 'bg-white text-slate-400 shadow-sm'}`}>
                     {index + 1}
                   </div>
                   <div>
@@ -212,7 +212,7 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
                   <div className="w-full h-[200px] flex items-end justify-center bg-slate-50/50 rounded-t-xl overflow-hidden relative">
                      <div 
                        className="w-full bg-emerald-500 rounded-t-xl transition-all duration-1000 ease-out group-hover:bg-emerald-400 relative" 
-                       style={{ height: \`\${heightPercentage}%\` }}
+                       style={{ height: `${heightPercentage}%` }}
                      >
                        {count > 0 && <div className="absolute top-0 left-0 right-0 h-1 bg-white/30 rounded-t-xl"></div>}
                      </div>

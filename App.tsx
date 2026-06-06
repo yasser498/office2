@@ -181,7 +181,7 @@ const App: React.FC = () => {
           </div>
           
           {/* Settings Section - Glassmorphism */}
-          <div className={\`flex-wrap items-center gap-3 bg-white/5 p-3 rounded-[1.5rem] border border-white/10 backdrop-blur-md shadow-lg lg:flex \${isMobileMenuOpen ? 'flex' : 'hidden'} w-full lg:w-auto transition-all\`}>
+          <div className={`flex-wrap items-center gap-3 bg-white/5 p-3 rounded-[1.5rem] border border-white/10 backdrop-blur-md shadow-lg lg:flex ${isMobileMenuOpen ? 'flex' : 'hidden'} w-full lg:w-auto transition-all`}>
             <div className="flex-1 flex items-center gap-2 bg-black/20 px-4 py-2 rounded-xl border border-white/5 focus-within:border-emerald-400/50 transition-all">
               <MapPin size={16} className="text-emerald-400" />
               <input type="text" value={educationDept} onChange={(e) => setEducationDept(e.target.value)} placeholder="إدارة التعليم..." className="bg-transparent border-none text-xs font-bold outline-none w-full placeholder:text-emerald-100/40 text-emerald-50" />
@@ -196,11 +196,11 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex bg-black/20 p-1 rounded-xl border border-white/5">
-              <button onClick={() => setSchoolGender('boys')} className={\`px-3 py-1.5 rounded-lg text-xs font-black transition-all \${schoolGender === 'boys' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-200 hover:text-white'}\`}>بنين</button>
-              <button onClick={() => setSchoolGender('girls')} className={\`px-3 py-1.5 rounded-lg text-xs font-black transition-all \${schoolGender === 'girls' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-200 hover:text-white'}\`}>بنات</button>
+              <button onClick={() => setSchoolGender('boys')} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${schoolGender === 'boys' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-200 hover:text-white'}`}>بنين</button>
+              <button onClick={() => setSchoolGender('girls')} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${schoolGender === 'girls' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-200 hover:text-white'}`}>بنات</button>
             </div>
 
-            <button onClick={handleSaveSettings} title="حفظ الإعدادات" className={\`p-2.5 rounded-xl transition-all shadow-md active:scale-90 flex items-center justify-center \${isSettingsSaved ? 'bg-teal-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30'}\`}>
+            <button onClick={handleSaveSettings} title="حفظ الإعدادات" className={`p-2.5 rounded-xl transition-all shadow-md active:scale-90 flex items-center justify-center ${isSettingsSaved ? 'bg-teal-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30'}`}>
               {isSettingsSaved ? <CheckCircle size={20} /> : <Save size={20} />}
             </button>
           </div>
@@ -216,26 +216,26 @@ const App: React.FC = () => {
           {/* Sleek Sidebar Navigation */}
           <aside className="lg:col-span-3 flex flex-col gap-6">
             <nav className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col gap-2 sticky top-32">
-              <button onClick={() => setViewMode('employees')} className={\`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group \${viewMode === 'employees' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}\`}>
-                <div className={\`\${viewMode === 'employees' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors\`}>
+              <button onClick={() => setViewMode('employees')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'employees' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'employees' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
                   <Users size={20} className={viewMode === 'employees' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
                 </div>
                 الموظفون والتقارير
               </button>
-              <button onClick={() => setViewMode('daily_log')} className={\`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group \${viewMode === 'daily_log' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}\`}>
-                <div className={\`\${viewMode === 'daily_log' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors\`}>
+              <button onClick={() => setViewMode('daily_log')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'daily_log' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'daily_log' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
                   <ClipboardList size={20} className={viewMode === 'daily_log' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
                 </div>
                 السجل العام والطباعة
               </button>
-              <button onClick={() => setViewMode('schedule_questioning')} className={\`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group \${viewMode === 'schedule_questioning' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}\`}>
-                <div className={\`\${viewMode === 'schedule_questioning' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors\`}>
+              <button onClick={() => setViewMode('schedule_questioning')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'schedule_questioning' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'schedule_questioning' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
                   <Calendar size={20} className={viewMode === 'schedule_questioning' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
                 </div>
                 الجدول والمساءلة
               </button>
-              <button onClick={() => setViewMode('statistics')} className={\`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group \${viewMode === 'statistics' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}\`}>
-                <div className={\`\${viewMode === 'statistics' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors\`}>
+              <button onClick={() => setViewMode('statistics')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'statistics' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'statistics' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
                   <BarChart3 size={20} className={viewMode === 'statistics' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
                 </div>
                 الإحصائيات والتحليل
@@ -300,25 +300,25 @@ const App: React.FC = () => {
                             <div 
                               key={emp.id} 
                               onClick={() => toggleEmployeeSelection(emp.id)}
-                              className={\`group p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden flex items-start gap-4 \${isSelected ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200 translate-y-[-2px]' : 'bg-white border-slate-200 hover:border-emerald-300 hover:shadow-md'}\`}
+                              className={`group p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden flex items-start gap-4 ${isSelected ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200 translate-y-[-2px]' : 'bg-white border-slate-200 hover:border-emerald-300 hover:shadow-md'}`}
                             >
                                {isSelected && <CheckCircle className="absolute top-4 left-4 text-white animate-in zoom-in-50" size={20} />}
-                               <div className={\`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors \${isSelected ? 'bg-white/20' : 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100'}\`}>
+                               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-white/20' : 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100'}`}>
                                   <User size={24} />
                                </div>
                                <div className="flex-1 min-w-0 pt-1">
                                   <h5 className="font-black text-base truncate mb-1">{emp.name}</h5>
-                                  <p className={\`text-xs font-bold mb-2 flex items-center gap-1.5 \${isSelected ? 'text-emerald-100' : 'text-slate-500'}\`}>
+                                  <p className={`text-xs font-bold mb-2 flex items-center gap-1.5 ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
                                      <Hash size={12} /> {emp.civilId}
                                   </p>
                                   <div className="flex flex-wrap gap-2">
-                                     <span className={\`px-2 py-0.5 rounded-md text-[10px] font-black \${isSelected ? 'bg-emerald-500/50 text-white' : 'bg-slate-100 text-slate-600'}\`}>{emp.workplace || 'معلم'}</span>
+                                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${isSelected ? 'bg-emerald-500/50 text-white' : 'bg-slate-100 text-slate-600'}`}>{emp.workplace || 'معلم'}</span>
                                   </div>
                                </div>
                                
                                <div className="absolute bottom-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button onClick={(e) => { e.stopPropagation(); handleStartEditing(emp); }} className={\`p-1.5 rounded-lg transition-colors \${isSelected ? 'hover:bg-white/20 text-white' : 'text-slate-400 hover:bg-slate-100 hover:text-emerald-600'}\`}><Edit3 size={14} /></button>
-                                  <button onClick={(e) => { e.stopPropagation(); handleDeleteEmployee(emp); }} className={\`p-1.5 rounded-lg transition-colors \${isSelected ? 'hover:bg-rose-400/50 text-white' : 'text-slate-400 hover:bg-rose-50 hover:text-rose-600'}\`}><Trash2 size={14} /></button>
+                                  <button onClick={(e) => { e.stopPropagation(); handleStartEditing(emp); }} className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'hover:bg-white/20 text-white' : 'text-slate-400 hover:bg-slate-100 hover:text-emerald-600'}`}><Edit3 size={14} /></button>
+                                  <button onClick={(e) => { e.stopPropagation(); handleDeleteEmployee(emp); }} className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'hover:bg-rose-400/50 text-white' : 'text-slate-400 hover:bg-rose-50 hover:text-rose-600'}`}><Trash2 size={14} /></button>
                                </div>
                             </div>
                           );

@@ -121,9 +121,9 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
               const emp = employeeMap.get(report.employeeId);
               const isSelected = selectedReportIds.includes(report.id!);
               return (
-                <tr key={report.id} className={\`hover:bg-emerald-50/40 transition-all duration-200 \${isSelected ? 'bg-emerald-50/60' : ''}\`}>
+                <tr key={report.id} className={`hover:bg-emerald-50/40 transition-all duration-200 ${isSelected ? 'bg-emerald-50/60' : ''}`}>
                   <td className="px-6 py-5 text-center">
-                    <button onClick={() => setSelectedReportIds(prev => prev.includes(report.id!) ? prev.filter(i => i !== report.id) : [...prev, report.id!])} className={\`transition-colors \${isSelected ? 'text-emerald-600' : 'text-slate-300 hover:text-emerald-400'}\`}>
+                    <button onClick={() => setSelectedReportIds(prev => prev.includes(report.id!) ? prev.filter(i => i !== report.id) : [...prev, report.id!])} className={`transition-colors ${isSelected ? 'text-emerald-600' : 'text-slate-300 hover:text-emerald-400'}`}>
                       {isSelected ? <CheckSquare size={22}/> : <Square size={22}/>}
                     </button>
                   </td>
@@ -135,12 +135,12 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                     <span className="bg-slate-100 px-3 py-1 rounded-lg border border-slate-200/50">{report.date}</span>
                   </td>
                   <td className="px-6 py-5">
-                    <span className={\`text-[11px] font-black px-3 py-1.5 rounded-lg border \${report.type === 'غياب' ? 'bg-amber-50 text-amber-600 border-amber-100' : report.type === 'مساءلة_حصص' ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}\`}>
+                    <span className={`text-[11px] font-black px-3 py-1.5 rounded-lg border ${report.type === 'غياب' ? 'bg-amber-50 text-amber-600 border-amber-100' : report.type === 'مساءلة_حصص' ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
                       {report.type === 'غياب' ? 'غياب' : report.type === 'مساءلة_حصص' ? 'مساءلة حصص' : 'تنبيه تأخر'}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-sm font-bold text-slate-600">
-                    {report.type === 'غياب' ? \`\${report.daysCount} أيام\` : report.type === 'مساءلة_حصص' ? \`غياب عن \${report.missedClasses?.length || 0} حصة\` : \`حضور: \${report.lateArrivalTime || '--'}\`}
+                    {report.type === 'غياب' ? `${report.daysCount} أيام` : report.type === 'مساءلة_حصص' ? `غياب عن ${report.missedClasses?.length || 0} حصة` : `حضور: ${report.lateArrivalTime || '--'}`}
                   </td>
                   <td className="px-6 py-5 text-center">
                     <button onClick={() => report.id && window.confirm('حذف نهائي؟') && onDeleteReport(report.id)} className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">

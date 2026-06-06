@@ -78,7 +78,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
           >
             <FileText size={18} />
             <span>تقارير إضافية</span>
-            <ChevronDown size={16} className={\`transition-transform duration-300 \${showExtraReports ? 'rotate-180' : ''}\`} />
+            <ChevronDown size={16} className={`transition-transform duration-300 ${showExtraReports ? 'rotate-180' : ''}`} />
           </button>
           
           <button
@@ -214,7 +214,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
               <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                   <div className="flex items-center gap-3">
-                    <span className={\`px-3 py-1 rounded-lg text-xs font-black border \${getTypeColor(report.type)}\`}>
+                    <span className={`px-3 py-1 rounded-lg text-xs font-black border ${getTypeColor(report.type)}`}>
                       {getTypeName(report.type)}
                     </span>
                     {report.type === 'غياب' && <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">{report.daysCount} أيام</span>}
@@ -256,11 +256,11 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
                     <select
                       value={report.excuseStatus || 'pending'}
                       onChange={(e) => handleUpdateExcuse(report, e.target.value as any)}
-                      className={\`text-xs font-black px-3 py-1.5 rounded-lg border outline-none \${
+                      className={`text-xs font-black px-3 py-1.5 rounded-lg border outline-none ${
                         report.excuseStatus === 'accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                         report.excuseStatus === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                         'bg-slate-50 text-slate-600 border-slate-200'
-                      }\`}
+                      }`}
                     >
                       <option value="pending">قيد المراجعة</option>
                       <option value="accepted">مقبول</option>
