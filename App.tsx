@@ -373,7 +373,7 @@ const App: React.FC = () => {
             ) : viewMode === 'daily_log' ? (
               <DailyLog employees={employees} reports={allReports} onDeleteReport={handleDeleteReport} />
             ) : viewMode === 'tracking' ? (
-              <SentReportsTracking />
+              <SentReportsTracking employees={employees} />
             ) : (
               <StatisticsView reports={allReports} employees={employees} />
             )}

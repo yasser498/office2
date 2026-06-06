@@ -1,108 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAllSharedReports } from '../utils/firebase';
 import { CheckCircle, Clock, Search, Printer, MessageCircle, AlertCircle, RefreshCw } from 'lucide-react';
-export const printSignedReport = (report: any, schoolName: string, principalName: string) => {
-  const oldFrame = document.getElementById('print-iframe');
-  if (oldFrame) document.body.removeChild(oldFrame);
 
-  const iframe = document.createElement('iframe');
-  iframe.id = 'print-iframe';
-  iframe.style.position = 'fixed';
-  iframe.style.right = '100%';
-  iframe.style.bottom = '100%';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.border = 'none';
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentWindow?.document;
-  if (doc) {
-    doc.open();
-    let causeText = report.type === 'تأخر_انصراف' ? `لوحظ تأخركم عن الحضور للمدرسة يوم ${report.date} لمدة (${report.lateArrivalTime}) دقيقة.` :
-                    report.type === 'مساءلة_حصص' ? `لوحظ عدم تواجدكم في الحصص المقررة يوم ${report.date}.` :
-                    `لوحظ غيابكم عن الدوام الرسمي يوم ${report.date}.`;
-
-    const htmlContent = `
-    <html dir="rtl" lang="ar">
-    <head>
-      <title>مساءلة موقعة - ${report.employeeName}</title>
-      <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.8; }
-        .header { display: flex; justify-content: space-between; margin-bottom: 50px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
-        .title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 40px; color: #0f172a; }
-        .content { margin-bottom: 30px; font-size: 16px; }
-        .content { margin-bottom: 30px; font-size: 16px; }
-        .signature-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; font-weight: 900; }
-        .dynamic-data { font-weight: 900; border-bottom: 1px solid black; padding: 0 5px; }
-        @media print { body { padding: 0; } }
-        @media print { body { padding: 0; } }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div>
-          <p>المملكة العربية السعودية</p>
-          <p>وزارة التعليم</p>
-          <p>مدرسة: ${schoolName}</p>
-        </div>
-        <div style="text-align: left;">
-          <p>التاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
-        </div>
-      </div>
-
-      <div class="title">مساءلة رسمية (معتمدة إلكترونياً)</div>
-
-      <div class="content">
-        <p><strong>المكرم / ${report.employeeName} المحترم</strong></p>
-        <p>السلام عليكم ورحمة الله وبركاته، وبعد:</p>
-        <p>${causeText}</p>
-        <p>نأمل إفادتنا عن أسباب ذلك.</p>
-        <br/>
-        <p style="text-align: left;"><strong>مدير المدرسة:</strong> ${principalName}</p>
-      </div>
-
-      <div style="border: 2px solid #000; padding: 15px; margin-top: 30px;">
-        <div style="font-weight: 900; text-decoration: underline; margin-bottom: 10px;">إفادة الموظف/ة:</div>
-        <div class="signature-row">
-          <span>المكرم مدير المدرسة / <span class="dynamic-data">${principalName}</span></span>
-          <span>وفقه الله</span>
-        </div>
-        <p style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
-        <p style="font-weight: 700; margin: 5px 0;">أفيدكم أن ${report.type === 'تأخر_انصراف' ? 'تأخري' : 'غيابي'} كان للأسباب التالية :</p>
-        
-        ${report.teacherExcuse ? 
-           `<div style="margin: 10px 0; font-weight: 900; min-height: 40px; font-size: 16px; color: #000; line-height: 2; border-bottom: 1px dotted black; padding-bottom: 5px;">${report.teacherExcuse}</div>` : 
-           `<div style="border-bottom: 1px dotted black; height: 30px; margin-bottom: 10px;"></div>
-            <div style="border-bottom: 1px dotted black; height: 30px; margin-bottom: 10px;"></div>`
-        }
-
-        <p style="font-weight: 700; margin: 10px 0;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
-        
-        <div class="signature-row" style="margin-top: 25px;">
-          <span>الاسم: <span class="dynamic-data">${report.employeeName}</span></span>
-          <span style="display: flex; align-items: center; gap: 10px;">
-            التوقيع: 
-            ${report.teacherSignature ? `<img src="${report.teacherSignature}" style="height: 60px; border-bottom: 1px solid #000;" />` : `..........................`}
-          </span>
-          <span>
-             ${report.signedAt ? `التاريخ: <span class="dynamic-data" style="margin-right: 5px;">${report.signedAt.split('T')[0]} م</span>` : `التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ`}
-          </span>
-        </div>
-      </div>
-      <script>
-        window.onload = function() {
-          setTimeout(() => { window.print(); }, 500);
-        };
-      </script>
-    </body>
-    </html>`;
-    doc.write(htmlContent);
-    doc.close();
-  }
-};
-
-
-const SentReportsTracking: React.FC = () => {
+const SentReportsTracking: React.FC<SentReportsTrackingProps> = ({ employees }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -128,7 +28,25 @@ const SentReportsTracking: React.FC = () => {
   };
 
   const handlePrint = (report: any) => {
-    printSignedReport(report, "المدرسة", "مدير المدرسة");
+    let employee = employees.find(e => e.name === report.employeeName);
+    if (!employee) {
+      // Fallback if employee is deleted
+      employee = {
+        id: '',
+        name: report.employeeName,
+        civilId: '',
+        phone: report.employeePhone || '',
+        employeeCode: '',
+        specialization: '',
+        workplace: ''
+      };
+    }
+    
+    if (report.type === 'غياب') {
+      generateOfficialAbsenceForm(employee, report);
+    } else {
+      generateLateArrivalDepartureForm(employee, report);
+    }
   };
 
   const filteredReports = reports.filter(r => r.employeeName?.toLowerCase().includes(search.toLowerCase()));
@@ -208,11 +126,15 @@ const SentReportsTracking: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-col md:flex-row items-center gap-3 w-full">
-                      <span className="text-xs font-black text-amber-600 px-4">بانتظار الرد...</span>
-                      <button onClick={() => handleSendWhatsApp(report)} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#25D366] text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-[#1ebd5a] transition-colors shadow-md">
-                        <MessageCircle size={18} />
-                        إرسال واتساب
+                    <div className="flex flex-col md:flex-row items-center gap-2 w-full">
+                      <span className="text-xs font-black text-amber-600 px-2 md:px-4">بانتظار الرد...</span>
+                      <button onClick={() => handlePrint(report)} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-black text-sm hover:bg-slate-200 transition-colors shadow-sm">
+                        <Printer size={16} />
+                        طباعة
+                      </button>
+                      <button onClick={() => handleSendWhatsApp(report)} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 py-2.5 rounded-xl font-black text-sm hover:bg-[#1ebd5a] transition-colors shadow-md">
+                        <MessageCircle size={16} />
+                        واتساب
                       </button>
                     </div>
                   )}
