@@ -142,6 +142,19 @@ const EmployeeManualForm: React.FC<EmployeeManualFormProps> = ({ onSave, onClose
                 />
               </div>
             </div>
+            <div class="space-y-1.5">
+              <label className="text-sm font-black text-slate-500 flex items-center gap-2">الجوال</label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <input
+                  type="text"
+                  placeholder="مثال: 0500000000"
+                  className="w-full pr-4 pl-10 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-semibold"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="pt-4 flex gap-4">

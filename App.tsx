@@ -413,6 +413,10 @@ const App: React.FC = () => {
                     <label className="text-xs font-black text-slate-600">العمل الحالي</label>
                     <input type="text" value={tempEmployeeData.workplace} onChange={(e) => setTempEmployeeData({...tempEmployeeData, workplace: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 font-bold transition-all" />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-600">الجوال</label>
+                    <input type="text" value={tempEmployeeData.phone || ''} onChange={(e) => setTempEmployeeData({...tempEmployeeData, phone: e.target.value})} placeholder="05XXXXXXXX" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 font-bold transition-all" />
+                  </div>
                </div>
                <div className="flex gap-3 pt-4">
                  <button type="submit" className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-black text-base transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">

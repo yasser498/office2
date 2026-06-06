@@ -56,6 +56,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
       const schoolName = await dbUtils.getSetting('schoolName') || '..........';
       const reportData = {
         employeeName: selectedEmployee.name,
+        employeePhone: selectedEmployee.phone || null,
         type: report.type,
         date: report.date,
         missedClasses: report.missedClasses || null,
@@ -65,9 +66,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
       
       const firebaseId = await shareReportToFirebase(reportData);
       const link = `${window.location.origin}/?sign=${firebaseId}`;
-      const text = `السلام عليكم أ. ${selectedEmployee.name}،nنأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة (مساءلة) خاصة بكم:nnالرابط: ${link}nnوشكراً لكم.`;
+      const text = `السلام عليكم أ. ${selectedEmployee.name}،\nنأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة (مساءلة) خاصة بكم:\n\nالرابط: ${link}\n\nوشكراً لكم.`;
       
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      const phoneParam = selectedEmployee.phone ? `${selectedEmployee.phone}?` : '?';
+      window.open(`https://wa.me/${phoneParam}text=${encodeURIComponent(text)}`, '_blank');
       await onUpdateReport({ ...report, firebaseId });
     } catch (e) {
       alert('حدث خطأ أثناء الاتصال بالخادم. يرجى التأكد من إعدادات Firebase.');

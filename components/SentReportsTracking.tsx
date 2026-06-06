@@ -106,19 +106,11 @@ const SentReportsTracking: React.FC = () => {
   }, []);
 
   const handleSendWhatsApp = (report: any) => {
-    // Generate the public link
     const link = `${window.location.origin}/?sign=${report.firebaseId}`;
-    
-    // Create the message text
-    const text = `السلام عليكم أ. ${report.employeeName}،
-نأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة (مساءلة) خاصة بكم:
+    const text = `السلام عليكم أ. ${report.employeeName}،\nنأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة (مساءلة) خاصة بكم:\n\nالرابط: ${link}\n\nوشكراً لكم.`;
 
-الرابط: ${link}
-
-وشكراً لكم.`;
-
-    // Opens WhatsApp Web or App
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const phoneParam = report.employeePhone ? `${report.employeePhone}?` : '?';
+    window.open(`https://wa.me/${phoneParam}text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const handlePrint = (report: any) => {
