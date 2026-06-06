@@ -12,8 +12,15 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
   const [loading, setLoading] = useState(true);
   const [excuse, setExcuse] = useState('');
   const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const sigCanvas = useRef<SignatureCanvas>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -41,12 +48,13 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
   };
 
   const handleSubmit = async () => {
+    setValidationError('');
     if (!excuse.trim()) {
-      alert('الرجاء كتابة العذر أو الرد قبل الاعتماد.');
+      setValidationError('الرجاء كتابة العذر أو الرد في المربع أعلاه قبل الاعتماد.');
       return;
     }
     if (sigCanvas.current?.isEmpty()) {
-      alert('الرجاء التوقيع في المربع المخصص.');
+      setValidationError('الرجاء رسم توقيعك في المربع المخصص قبل الاعتماد.');
       return;
     }
 
@@ -90,10 +98,23 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
         <div className="bg-white p-10 rounded-[2rem] shadow-xl text-center max-w-md w-full border border-emerald-100 animate-in zoom-in-95">
           <CheckCircle size={64} className="mx-auto text-emerald-500 mb-6" />
           <h2 className="text-2xl font-black text-slate-800 mb-2">تم اعتماد الرد والتوقيع بنجاح</h2>
-          <p className="text-slate-500 font-bold mb-6">شكراً لتعاونك، تم إرسال الرد لإدارة المدرسة بنجاح.</p>
-          <div className="bg-slate-50 p-4 rounded-xl text-sm font-bold text-slate-600 text-right">
-            <p className="mb-2"><span className="text-emerald-600">رقم المساءلة:</span> {reportId.slice(0, 8)}</p>
-            <p><span className="text-emerald-600">وقت الرد:</span> {new Date().toLocaleTimeString('ar-SA')}</p>
+          <p className="text-slate-500 font-bold mb-6">شكراً لتعاونك، تم إرسال إفادتك لإدارة المدرسة بنجاح وتم تضمينها في نموذج المساءلة الرسمي.</p>
+          
+          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm font-bold text-slate-700 text-right space-y-3">
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500">نوع المساءلة:</span>
+              <span className="text-emerald-700 font-black">{report.type === 'غياب' ? 'غياب' : report.type === 'تأخر_انصراف' ? 'تأخر / انصراف' : 'مساءلة حصص'}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500">تاريخ الحالة:</span>
+              <span className="text-emerald-700 font-black">{report.date}</span>
+            </div>
+            <div className="flex justify-between items-center pt-1">
+              <span className="text-slate-500 flex items-center gap-1"><Clock size={16}/> وقت الرد والاعتماد:</span>
+              <span className="text-emerald-600 font-black" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {currentTime.toLocaleTimeString('ar-SA')}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -194,6 +215,13 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
             </div>
           </div>
         </div>
+
+        {validationError && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-600 p-4 rounded-2xl flex items-center gap-3 font-black animate-in slide-in-from-top-4">
+            <AlertCircle size={24} />
+            {validationError}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <button 

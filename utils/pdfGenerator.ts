@@ -199,21 +199,31 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </div>
 
         <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
-          <div class="section-label small-text-7">(2) الإفادة :</div>
+          <div class="section-label small-text-7">(2) إفادة الموظف/ة:</div>
           <div class="signature-row small-text-7">
             <span>${gt(gender, 'المكرم مدير المدرسة /', 'المكرمة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span></span>
             <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
           </div>
           <p class="small-text-7" style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
           <p class="small-text-7" style="margin: 5px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 8px;"></div>
-          <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 10px;"></div>
+          
+          ${report.teacherExcuse ? 
+             `<div style="margin: 8px 0; font-weight: 900; min-height: 40px; font-size: 11pt; color: #000; line-height: 1.8; border-bottom: 1px dotted black; padding-bottom: 5px;">${report.teacherExcuse}</div>` : 
+             `<div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 8px;"></div>
+              <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 10px;"></div>`
+          }
+
           <p class="small-text-7" style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
-          <div class="signature-row small-text-7" style="margin-top: 15px;">
+          <div class="signature-row small-text-7" style="margin-top: 15px; align-items: center;">
             <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span>التوقيع: .................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span style="display: flex; align-items: center; gap: 10px;">
+              التوقيع: 
+              ${report.teacherSignature ? `<img src="${report.teacherSignature}" style="height: 50px; border-bottom: 1px solid #000;" />` : `.................`}
+            </span>
+            <span>
+               ${report.signedAt ? `التاريخ: <span class="dynamic-data" style="margin-right: 5px;">${report.signedAt.split('T')[0]} م</span>` : `التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ`}
+            </span>
           </div>
         </div>
 
@@ -363,13 +373,24 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           </div>
           <p style="font-weight: 900; margin: 2px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
           <p style="font-weight: 700; margin: 2px 0;">أفيدكم أن تأخري كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 20px; margin-bottom: 5px;"></div>
+          
+          ${report.teacherExcuse ? 
+             `<div style="margin: 8px 0; font-weight: 900; min-height: 40px; font-size: 11pt; color: #000; line-height: 1.8; border-bottom: 1px dotted black; padding-bottom: 5px;">${report.teacherExcuse}</div>` : 
+             `<div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 8px;"></div>
+              <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 10px;"></div>`
+          }
+
           <p style="font-weight: 700; margin: 2px 0;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
-          <div class="signature-row" style="margin-top: 10px;">
+          <div class="signature-row" style="margin-top: 15px; align-items: center;">
             <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span>التوقيع: ..........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span style="display: flex; align-items: center; gap: 10px;">
+              التوقيع: 
+              ${report.teacherSignature ? `<img src="${report.teacherSignature}" style="height: 50px; border-bottom: 1px solid #000;" />` : `..........................`}
+            </span>
+            <span>
+               ${report.signedAt ? `التاريخ: <span class="dynamic-data" style="margin-right: 5px;">${report.signedAt.split('T')[0]} م</span>` : `التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ`}
+            </span>
           </div>
         </div>
 
