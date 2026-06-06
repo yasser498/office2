@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, set, get, child, update } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL
+  apiKey: "AIzaSyBcKj43w38I4vSD9gdedurxwm8A0-tNjZs",
+  authDomain: "school-attendance-b8592.firebaseapp.com",
+  projectId: "school-attendance-b8592",
+  storageBucket: "school-attendance-b8592.firebasestorage.app",
+  messagingSenderId: "155764122686",
+  appId: "1:155764122686:web:385248d157a503bbf8dd6f",
+  measurementId: "G-QBJWP48T02",
+  databaseURL: "https://school-attendance-b8592-default-rtdb.firebaseio.com/"
 };
 
 const app = initializeApp(firebaseConfig);
