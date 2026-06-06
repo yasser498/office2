@@ -11,6 +11,7 @@ import SentReportsTracking from './components/SentReportsTracking';
 import SignReport from './components/SignReport';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
+import { formatPhoneNumber } from './utils/phoneFormatter';
 import React, { useState, useEffect, useMemo } from 'react';
 
 const App: React.FC = () => {
@@ -95,7 +96,11 @@ const App: React.FC = () => {
   const handleUpdateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (tempEmployeeData) {
-      await dbUtils.updateEmployee(tempEmployeeData);
+      const formattedData = {
+        ...tempEmployeeData,
+        phone: formatPhoneNumber(tempEmployeeData.phone)
+      };
+      await dbUtils.updateEmployee(formattedData);
       setIsEditingEmployee(false);
       setTempEmployeeData(null);
       await refresh();

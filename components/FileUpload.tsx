@@ -5,6 +5,7 @@ import { Upload, Download, Trash2, FileSpreadsheet, Info } from 'lucide-react';
 import { Employee } from '../types';
 import * as dbUtils from '../utils/db';
 import { downloadExcelTemplate } from '../utils/excelTemplate';
+import { formatPhoneNumber } from '../utils/phoneFormatter';
 
 interface FileUploadProps {
   onDataLoaded: (data: Omit<Employee, 'id'>[]) => void;
@@ -32,7 +33,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded, onReset }) => {
         specialization: item['التخصص'] || item.Specialization || '',
         level: item['المستوى / المرتبة'] || item['المستوى'] || item.Level || '',
         workplace: item['العمل الحالي'] || item.Workplace || '',
-        phone: String(item['الجوال'] || item.Phone || ''),
+        phone: formatPhoneNumber(item['الجوال'] || item.Phone || ''),
         employeeCode: item['رقم الوظيفة'] || item['الكود'] || '',
         grade: item['الدرجة'] || '',
       }));

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { X, Save, UserPlus, Fingerprint, Briefcase, Hash, GraduationCap, Building } from 'lucide-react';
 import { Employee } from '../types';
+import { formatPhoneNumber } from '../utils/phoneFormatter';
 
 interface EmployeeManualFormProps {
   onSave: (employee: Omit<Employee, 'id'>) => Promise<void>;
@@ -30,7 +31,11 @@ const EmployeeManualForm: React.FC<EmployeeManualFormProps> = ({ onSave, onClose
 
     setIsSubmitting(true);
     try {
-      await onSave(formData);
+      const formattedData = {
+        ...formData,
+        phone: formatPhoneNumber(formData.phone)
+      };
+      await onSave(formattedData);
       onClose();
     } catch (err) {
       alert('حدث خطأ أثناء حفظ الموظف');
