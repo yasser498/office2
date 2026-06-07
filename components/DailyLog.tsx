@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Report, Employee } from '../types';
-import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut, Filter, History, FileSignature } from 'lucide-react';
+import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut, Filter, History, FileSignature, MessageCircle } from 'lucide-react';
 import { generateBatchForms, generateAcknowledgmentLog } from '../utils/pdfGenerator';
+import { shareReportToFirebase } from '../utils/firebase';
+import * as dbUtils from '../utils/db';
 
 interface DailyLogProps {
   employees: Employee[];
@@ -34,6 +36,38 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
       })
       .sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
   }, [reports, dateFilter, searchQuery, typeFilter, filterMode, employeeMap]);
+
+  const handleShareWhatsApp = async (report: Report) => {
+    const employee = employeeMap.get(report.employeeId);
+    if (!employee) {
+      alert('لم يتم العثور على بيانات الموظف لهذا السجل.');
+      return;
+    }
+    const popup = window.open('', '_blank');
+    try {
+      const schoolName = await dbUtils.getSetting('schoolName') || '..........';
+      const firebaseId = await shareReportToFirebase({
+        employeeName: employee.name,
+        employeePhone: employee.phone || null,
+        type: report.type,
+        date: report.date,
+        missedClasses: report.missedClasses || null,
+        lateArrivalTime: report.lateArrivalTime || null,
+        earlyDepartureTime: report.earlyDepartureTime || null,
+        absenceSession: report.absenceSession || null,
+        schoolName,
+      });
+      const link = `${window.location.origin}/?sign=${firebaseId}`;
+      const text = `السلام عليكم أ. ${employee.name}\nنأمل منكم الدخول على الرابط المرفق وتعبئة نموذج إفادة المساءلة الخاصة بكم:\n\n${link}\n\nوشكراً لكم.`;
+      const phoneParam = employee.phone ? `${employee.phone}?` : '?';
+      const whatsappUrl = `https://wa.me/${phoneParam}text=${encodeURIComponent(text)}`;
+      if (popup) popup.location.href = whatsappUrl;
+      else window.location.href = whatsappUrl;
+    } catch (e) {
+      if (popup) popup.close();
+      alert('حدث خطأ أثناء تجهيز رابط الواتساب.');
+    }
+  };
 
   return (
     <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in duration-500">
@@ -145,6 +179,9 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                   <td className="px-6 py-5 text-center">
                     <button onClick={() => report.id && window.confirm('حذف نهائي؟') && onDeleteReport(report.id)} className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
                       <Trash2 size={18}/>
+                    </button>
+                    <button onClick={() => handleShareWhatsApp(report)} className="p-2 mr-2 text-blue-500 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all" title="إرسال واتساب">
+                      <MessageCircle size={18}/>
                     </button>
                   </td>
                 </tr>

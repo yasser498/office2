@@ -38,7 +38,6 @@ const MorningAttendance: React.FC = () => {
   const [search, setSearch] = useState('');
   const [gradeFilter, setGradeFilter] = useState('');
   const [sectionFilter, setSectionFilter] = useState('');
-  const [sessionFilter, setSessionFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | number | null>(null);
 
@@ -108,17 +107,13 @@ const MorningAttendance: React.FC = () => {
 
   const grades = Array.from(new Set(todaySchedule.map(row => row.grade).filter(Boolean))).sort();
   const sections = Array.from(new Set(todaySchedule.filter(row => !gradeFilter || row.grade === gradeFilter).map(row => row.section).filter(Boolean))).sort();
-  const sessions = Array.from(new Set(todaySchedule.map(row => row.session).filter(Boolean))).sort();
+  const activeSession = currentTiming?.session || '';
 
   const filteredSchedule = todaySchedule.filter(row =>
     (!gradeFilter || row.grade === gradeFilter) &&
     (!sectionFilter || row.section === sectionFilter) &&
-    (!sessionFilter || row.session === sessionFilter)
+    (!activeSession || row.session === activeSession)
   );
-
-  useEffect(() => {
-    if (!sessionFilter && currentTiming?.session) setSessionFilter(currentTiming.session);
-  }, [currentTiming?.session]);
 
   const toggleStatus = async (employee: RosterEmployee) => {
     const current = records[String(employee.id)]?.status || 'present';
@@ -238,7 +233,7 @@ const MorningAttendance: React.FC = () => {
         {mode === 'classes' && (
           <>
             <div className="bg-white rounded-3xl p-5 shadow-lg border border-slate-200">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="bg-amber-50 rounded-2xl p-4 md:col-span-1">
                   <p className="text-xs font-black text-amber-600">الحصة الحالية</p>
                   <h3 className="text-2xl font-black text-amber-900">{currentTiming?.label || 'غير محددة'}</h3>
@@ -251,10 +246,6 @@ const MorningAttendance: React.FC = () => {
                 <select value={sectionFilter} onChange={e => setSectionFilter(e.target.value)} className="px-4 py-3 rounded-2xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-amber-100">
                   <option value="">كل الفصول</option>
                   {sections.map(value => <option key={value} value={value}>{value}</option>)}
-                </select>
-                <select value={sessionFilter} onChange={e => setSessionFilter(e.target.value)} className="px-4 py-3 rounded-2xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-amber-100">
-                  <option value="">كل الحصص</option>
-                  {sessions.map(value => <option key={value} value={value}>{value}</option>)}
                 </select>
               </div>
             </div>

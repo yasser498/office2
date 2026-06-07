@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Settings, Trash2, ShieldAlert, Database, Users, MessageSquare, Link2, ClipboardCheck, CalendarX } from 'lucide-react';
 import { deleteAllFirebaseReports, publishMorningAttendanceRoster } from '../utils/firebase';
-import { Employee } from '../types';
+import { ClassTiming, Employee } from '../types';
 import * as dbUtils from '../utils/db';
-import { buildClassTimings } from '../utils/classTimings';
+import { buildDefaultClassTimings, minutesToTime, timeToMinutes } from '../utils/classTimings';
 
 interface SettingsViewProps {
   employees: Employee[];
@@ -15,23 +15,50 @@ interface SettingsViewProps {
 const SettingsView: React.FC<SettingsViewProps> = ({ employees, onClearEmployees, onClearReports, onScheduleCleared }) => {
   const [isDeletingFirebase, setIsDeletingFirebase] = useState(false);
   const [isPublishingRoster, setIsPublishingRoster] = useState(false);
-  const [dayStart, setDayStart] = useState('06:45');
-  const [assemblyDuration, setAssemblyDuration] = useState(15);
-  const [classDuration, setClassDuration] = useState(45);
-  const [breakDuration, setBreakDuration] = useState(20);
-  const [breakAfterSession, setBreakAfterSession] = useState(2);
+  const [timings, setTimings] = useState<ClassTiming[]>(buildDefaultClassTimings());
+  const [draggedTimingId, setDraggedTimingId] = useState<string | null>(null);
   const attendanceLink = `${window.location.origin}${window.location.pathname}?attendance=morning`;
 
   React.useEffect(() => {
-    dbUtils.getSetting('classTimingConfig').then(config => {
-      if (!config) return;
-      setDayStart(config.dayStart || '06:45');
-      setAssemblyDuration(config.assemblyDuration || 15);
-      setClassDuration(config.classDuration || 45);
-      setBreakDuration(config.breakDuration || 20);
-      setBreakAfterSession(config.breakAfterSession || 2);
+    dbUtils.getSetting('classTimings').then(savedTimings => {
+      if (savedTimings?.length) setTimings(savedTimings);
     }).catch(console.error);
   }, []);
+
+  const recalculateTimings = (rows: ClassTiming[], changedIndex = 0) => {
+    const next = [...rows];
+    for (let i = changedIndex; i < next.length; i++) {
+      const start = i === 0 ? next[i].start : next[i - 1].end;
+      next[i] = { ...next[i], start, end: minutesToTime(timeToMinutes(start) + Number(next[i].duration || 0)) };
+    }
+    return next;
+  };
+
+  const updateTiming = (id: string, updates: Partial<ClassTiming>) => {
+    setTimings(prev => {
+      const index = prev.findIndex(row => row.id === id);
+      if (index === -1) return prev;
+      const current = prev[index];
+      const normalizedUpdates = { ...updates };
+      if (updates.end) {
+        normalizedUpdates.duration = Math.max(0, timeToMinutes(updates.end) - timeToMinutes(current.start));
+      }
+      const next = prev.map(row => row.id === id ? { ...row, ...normalizedUpdates } : row);
+      return recalculateTimings(next, updates.start ? index : index);
+    });
+  };
+
+  const moveTiming = (fromId: string, toId: string) => {
+    setTimings(prev => {
+      const fromIndex = prev.findIndex(row => row.id === fromId);
+      const toIndex = prev.findIndex(row => row.id === toId);
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return prev;
+      const next = [...prev];
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, item);
+      return recalculateTimings(next, Math.min(fromIndex, toIndex));
+    });
+  };
 
   const handleClearEmployees = async () => {
     if (window.confirm('تحذير: سيتم حذف جميع أسماء وبيانات الموظفين المخزنة محلياً. هل أنت متأكد؟')) {
@@ -69,10 +96,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ employees, onClearEmployees
     setIsPublishingRoster(true);
     try {
       const schedule = await dbUtils.getSchedule();
-      const timingConfig = { dayStart, assemblyDuration, classDuration, breakDuration, breakAfterSession };
-      await dbUtils.setSetting('classTimingConfig', timingConfig);
-      const timings = buildClassTimings(dayStart, assemblyDuration, classDuration, breakDuration, breakAfterSession);
-      await publishMorningAttendanceRoster(employees, schedule, timings);
+      const normalizedTimings = recalculateTimings(timings, 0);
+      await dbUtils.setSetting('classTimings', normalizedTimings);
+      setTimings(normalizedTimings);
+      await publishMorningAttendanceRoster(employees, schedule, normalizedTimings);
       await navigator.clipboard?.writeText(attendanceLink);
       alert('تم تحديث رابط التحضير ونسخه. يمكن إرساله للإداري الآن.');
     } catch (e) {
@@ -108,36 +135,33 @@ const SettingsView: React.FC<SettingsViewProps> = ({ employees, onClearEmployees
             <h3 className="font-black text-slate-800 text-lg">توقيت اليوم الدراسي لبوابة الإداري</h3>
             <p className="text-xs text-slate-500 mt-1 font-bold">يستخدم لحساب الحصة الحالية والمدة المتبقية عند تسجيل انصراف من الحصة.</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <label className="space-y-1">
-              <span className="text-xs font-black text-slate-600">بداية الطابور</span>
-              <input type="time" value={dayStart} onChange={e => setDayStart(e.target.value)} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
-            </label>
-            <label className="space-y-1">
-              <span className="text-xs font-black text-slate-600">مدة الطابور</span>
-              <input type="number" min="0" value={assemblyDuration} onChange={e => setAssemblyDuration(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
-            </label>
-            <label className="space-y-1">
-              <span className="text-xs font-black text-slate-600">مدة الحصة</span>
-              <input type="number" min="1" value={classDuration} onChange={e => setClassDuration(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
-            </label>
-            <label className="space-y-1">
-              <span className="text-xs font-black text-slate-600">مدة الفسحة</span>
-              <input type="number" min="0" value={breakDuration} onChange={e => setBreakDuration(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
-            </label>
-            <label className="space-y-1">
-              <span className="text-xs font-black text-slate-600">الفسحة بعد الحصة</span>
-              <select value={breakAfterSession} onChange={e => setBreakAfterSession(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50">
-                {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </label>
-          </div>
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-sm text-right">
-              <thead className="bg-emerald-50 text-emerald-800 font-black"><tr><th className="p-3">الحصة</th><th className="p-3">المدة</th><th className="p-3">من</th><th className="p-3">إلى</th></tr></thead>
+              <thead className="bg-emerald-50 text-emerald-800 font-black"><tr><th className="p-3 w-10">سحب</th><th className="p-3">الحصة</th><th className="p-3">المدة</th><th className="p-3">من</th><th className="p-3">إلى</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {buildClassTimings(dayStart, assemblyDuration, classDuration, breakDuration, breakAfterSession).map(t => (
-                  <tr key={t.id}><td className="p-3 font-black">{t.label}</td><td className="p-3">{t.duration}د</td><td className="p-3">{t.start}</td><td className="p-3">{t.end}</td></tr>
+                {timings.map((t, index) => (
+                  <tr
+                    key={t.id}
+                    draggable
+                    onDragStart={() => setDraggedTimingId(t.id)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => { if (draggedTimingId) moveTiming(draggedTimingId, t.id); setDraggedTimingId(null); }}
+                    className="hover:bg-emerald-50/40"
+                  >
+                    <td className="p-3 text-slate-400 cursor-grab font-black">☰</td>
+                    <td className="p-3">
+                      <input value={t.label} onChange={e => updateTiming(t.id, { label: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-slate-200 font-black outline-none" />
+                    </td>
+                    <td className="p-3">
+                      <input type="number" min="0" value={t.duration} onChange={e => updateTiming(t.id, { duration: Number(e.target.value) })} className="w-24 px-3 py-2 rounded-xl border border-slate-200 font-black outline-none" />
+                    </td>
+                    <td className="p-3">
+                      <input type="time" value={t.start} onChange={e => updateTiming(t.id, { start: e.target.value })} disabled={index > 0} className="w-32 px-3 py-2 rounded-xl border border-slate-200 font-black outline-none disabled:bg-slate-50 disabled:text-slate-500" />
+                    </td>
+                    <td className="p-3">
+                      <input type="time" value={t.end} onChange={e => updateTiming(t.id, { end: e.target.value })} className="w-32 px-3 py-2 rounded-xl border border-slate-200 font-black outline-none" />
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
