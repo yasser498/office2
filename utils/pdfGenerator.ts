@@ -1,6 +1,7 @@
 
 import { Employee, Report } from '../types';
 import * as dbUtils from './db';
+import { getReportMinutes } from './discipline';
 
 const MINISTRY_LOGO_URL = 'https://www.raed.net/img?id=1486401';
 
@@ -122,6 +123,37 @@ const getCommonStyles = () => `
 `;
 
 const gt = (gender: 'boys' | 'girls', masc: string, fem: string) => gender === 'boys' ? masc : fem;
+
+const getReportTypeName = (type: string) => {
+  switch (type) {
+    case 'غياب': return 'مساءلة غياب';
+    case 'تأخر_انصراف': return 'تأخر / انصراف';
+    case 'مساءلة_حصص': return 'مساءلة حصص';
+    case 'إذن_خروج': return 'إذن خروج';
+    case 'خطاب_إنذار': return 'خطاب إنذار';
+    case 'شكر_وتقدير': return 'شكر وتقدير';
+    default: return type || 'غير محدد';
+  }
+};
+
+const getReplyStatus = (report: Report) => {
+  if (report.teacherSignature || report.teacherExcuse) return 'تم الرد والتوقيع';
+  if (report.firebaseId) return 'مرسلة بانتظار الرد';
+  return 'محفوظة محلياً';
+};
+
+const officialHeaderHTML = (schoolName: string, educationDept: string, sideTitle: string, currentDate = new Date().toLocaleDateString('ar-SA')) => `
+  <div class="header">
+    <div class="header-info">
+      <div>المملكة العربية السعودية</div>
+      <div>وزارة التعليم</div>
+      <div>${educationDept}</div>
+      <div>${schoolName}</div>
+    </div>
+    <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
+    <div class="header-left">${sideTitle}<br>التاريخ: ${currentDate}</div>
+  </div>
+`;
 
 /**
  * تقرير الغياب (تم الحفاظ عليه كما هو)
@@ -589,7 +621,7 @@ export const generateLateCumulativeLog = async (employee: Employee, reports: Rep
             <th style="width: 30px;">م</th>
             <th>التاريخ</th>
             <th>اليوم</th>
-            <th>وقت الحضور</th>
+            <th>مدة التأخير</th>
             <th>وقت الانصراف</th>
             <th>ملاحظات</th>
           </tr>
@@ -690,12 +722,12 @@ export const generateAcknowledgmentLog = async (employees: Employee[]) => {
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
-export const generateStatisticsPDF = async (stats: any, schoolName: string, principalName: string) => {
+const generateStatisticsPDFLegacy = async (stats: any, schoolName: string, principalName: string) => {
   const html = `<div class="page-container"><h1>التقرير الإحصائي العام للانضباط</h1><p>المدرسة: ${schoolName}</p><p>إجمالي السجلات: ${stats.totalReports}</p><p>حالات الغياب: ${stats.absenceCount}</p><p>حالات التأخر: ${stats.lateCount}</p></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
-export const generateEmployeePDF = async (employee: Employee, reports: Report[]) => {
+const generateEmployeePDFLegacy = async (employee: Employee, reports: Report[]) => {
   const html = `<div class="page-container"><h1>سجل الانضباط للموظف: ${employee.name}</h1><p>عدد السجلات الإجمالي: ${reports.length}</p></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };

@@ -58,6 +58,34 @@ export interface MorningAttendanceRecord {
   updatedAt: string;
 }
 
+export interface ClassTiming {
+  id: string;
+  label: string;
+  duration: number;
+  start: string;
+  end: string;
+  type: 'assembly' | 'class' | 'break';
+  session?: string;
+}
+
+export interface AdminClassIncident {
+  id?: string;
+  date: string;
+  day: string;
+  scheduleEntry: ScheduleEntry;
+  incidentType: 'absence' | 'early_departure';
+  recordedAt: string;
+  remainingMinutes: number;
+  classEndTime?: string;
+}
+
+export interface AdminPortalPayload {
+  updatedAt: string;
+  employees: Array<Pick<Employee, 'id' | 'name' | 'employeeCode' | 'workplace'>>;
+  schedule: ScheduleEntry[];
+  timings: ClassTiming[];
+}
+
 export interface ScheduleEntry {
   id?: number;     // المعرف
   day: string;     // اليوم

@@ -3,13 +3,13 @@ import { Report, Employee } from '../types';
 import { History, Download, FileCheck, AlertCircle, Clock, Edit2, Trash2, LogOut, FileText, Award, ChevronDown, X, Send, AlertTriangle } from 'lucide-react';
 import { 
   generateOfficialAbsenceForm, 
-  generateEmployeePDF, 
   generateLateArrivalDepartureForm, 
   generateExitPermit, 
   generateLateCumulativeLog, 
   generateAppreciationCertificate,
   generateWarningLetter
 } from '../utils/pdfGenerator';
+import { generateOfficialEmployeePDF } from '../utils/officialReports';
 import { shareReportToFirebase } from '../utils/firebase';
 import * as dbUtils from '../utils/db';
 import { MessageCircle } from 'lucide-react';
@@ -123,7 +123,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
           </button>
           
           <button
-            onClick={() => generateEmployeePDF(selectedEmployee, reports)}
+            onClick={() => generateOfficialEmployeePDF(selectedEmployee, reports)}
             className="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl"
           >
             <Download size={18} />

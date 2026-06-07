@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, set, get, child, update } from 'firebase/database';
-import { Employee, MorningAttendanceRecord } from '../types';
+import { AdminClassIncident, AdminPortalPayload, ClassTiming, Employee, MorningAttendanceRecord, ScheduleEntry } from '../types';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcKj43w38I4vSD9gdedurxwm8A0-tNjZs",
@@ -96,7 +96,7 @@ export const deleteAllFirebaseReports = async () => {
   }
 };
 
-export const publishMorningAttendanceRoster = async (employees: Employee[]) => {
+export const publishMorningAttendanceRoster = async (employees: Employee[], schedule: ScheduleEntry[] = [], timings: ClassTiming[] = []) => {
   const roster = employees.map(emp => ({
     id: emp.id,
     name: emp.name,
@@ -106,6 +106,12 @@ export const publishMorningAttendanceRoster = async (employees: Employee[]) => {
   await set(ref(db, 'morning_attendance_roster'), {
     updatedAt: new Date().toISOString(),
     employees: roster,
+  });
+  await set(ref(db, 'admin_portal_payload'), {
+    updatedAt: new Date().toISOString(),
+    employees: roster,
+    schedule,
+    timings,
   });
 };
 
@@ -130,4 +136,22 @@ export const setMorningAttendanceStatus = async (date: string, employee: { id: n
   };
   await set(ref(db, `morning_attendance/${date}/${employee.id}`), record);
   return record;
+};
+
+export const getAdminPortalPayload = async (): Promise<AdminPortalPayload> => {
+  const snapshot = await get(child(ref(db), 'admin_portal_payload'));
+  if (!snapshot.exists()) return { updatedAt: '', employees: [], schedule: [], timings: [] };
+  return snapshot.val();
+};
+
+export const setClassIncident = async (incident: AdminClassIncident) => {
+  const key = `${incident.date}_${incident.scheduleEntry.day}_${incident.scheduleEntry.session}_${incident.scheduleEntry.grade}_${incident.scheduleEntry.section}_${incident.incidentType}`.replace(/[.#$/\[\]]/g, '-');
+  const record = { ...incident, id: key };
+  await set(ref(db, `class_incidents/${incident.date}/${key}`), record);
+  return record;
+};
+
+export const getClassIncidentsByDate = async (date: string): Promise<Record<string, AdminClassIncident>> => {
+  const snapshot = await get(child(ref(db), `class_incidents/${date}`));
+  return snapshot.exists() ? snapshot.val() : {};
 };

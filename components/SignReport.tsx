@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { getSharedReport, submitTeacherResponse } from '../utils/firebase';
-import { PenTool, Send, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { PenTool, Send, AlertCircle, CheckCircle, Clock, ShieldCheck, FileCheck2 } from 'lucide-react';
 
 interface SignReportProps {
   reportId: string;
@@ -14,13 +14,8 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
   const [error, setError] = useState('');
   const [validationError, setValidationError] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [submittedAt, setSubmittedAt] = useState<string>('');
   const sigCanvas = useRef<SignatureCanvas>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -30,6 +25,7 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
           setReport(data);
           if (data.status === 'signed') {
             setSubmitted(true);
+            setSubmittedAt(data.signedAt || '');
           }
         } else {
           setError('لم يتم العثور على المساءلة. تأكد من صحة الرابط.');
@@ -63,6 +59,9 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
       const signatureDataUrl = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png');
       if (signatureDataUrl) {
         await submitTeacherResponse(reportId, excuse, signatureDataUrl);
+        const now = new Date().toISOString();
+        setSubmittedAt(now);
+        setReport((prev: any) => ({ ...prev, status: 'signed', signedAt: now }));
         setSubmitted(true);
       }
     } catch (err) {
@@ -93,10 +92,14 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
   }
 
   if (submitted || (report && report.status === 'signed')) {
+    const replyDate = new Date(submittedAt || report?.signedAt || new Date().toISOString());
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4" dir="rtl">
-        <div className="bg-white p-10 rounded-[2rem] shadow-xl text-center max-w-md w-full border border-emerald-100 animate-in zoom-in-95">
-          <CheckCircle size={64} className="mx-auto text-emerald-500 mb-6" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-950 via-emerald-800 to-teal-700 p-4" dir="rtl">
+        <div className="bg-white/95 p-10 rounded-[2.5rem] shadow-2xl text-center max-w-lg w-full border border-emerald-100 animate-in zoom-in-95 relative overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-2 bg-emerald-500"></div>
+          <div className="w-24 h-24 mx-auto rounded-[2rem] bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 shadow-inner border border-emerald-100">
+            <ShieldCheck size={58} />
+          </div>
           <h2 className="text-2xl font-black text-slate-800 mb-2">تم اعتماد الرد والتوقيع بنجاح</h2>
           <p className="text-slate-500 font-bold mb-6">شكراً لتعاونك، تم إرسال إفادتك لإدارة المدرسة بنجاح وتم تضمينها في نموذج المساءلة الرسمي.</p>
           
@@ -112,8 +115,12 @@ const SignReport: React.FC<SignReportProps> = ({ reportId }) => {
             <div className="flex justify-between items-center pt-1">
               <span className="text-slate-500 flex items-center gap-1"><Clock size={16}/> وقت الرد والاعتماد:</span>
               <span className="text-emerald-600 font-black" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {currentTime.toLocaleTimeString('ar-SA')}
+                {replyDate.toLocaleTimeString('ar-SA')}
               </span>
+            </div>
+            <div className="flex justify-between items-center pt-1">
+              <span className="text-slate-500 flex items-center gap-1"><FileCheck2 size={16}/> تاريخ اعتماد الرد:</span>
+              <span className="text-emerald-600 font-black">{replyDate.toLocaleDateString('ar-SA')}</span>
             </div>
           </div>
         </div>

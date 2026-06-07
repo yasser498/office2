@@ -3,6 +3,7 @@ import { Settings, Trash2, ShieldAlert, Database, Users, MessageSquare, Link2, C
 import { deleteAllFirebaseReports, publishMorningAttendanceRoster } from '../utils/firebase';
 import { Employee } from '../types';
 import * as dbUtils from '../utils/db';
+import { buildClassTimings } from '../utils/classTimings';
 
 interface SettingsViewProps {
   employees: Employee[];
@@ -14,7 +15,23 @@ interface SettingsViewProps {
 const SettingsView: React.FC<SettingsViewProps> = ({ employees, onClearEmployees, onClearReports, onScheduleCleared }) => {
   const [isDeletingFirebase, setIsDeletingFirebase] = useState(false);
   const [isPublishingRoster, setIsPublishingRoster] = useState(false);
+  const [dayStart, setDayStart] = useState('06:45');
+  const [assemblyDuration, setAssemblyDuration] = useState(15);
+  const [classDuration, setClassDuration] = useState(45);
+  const [breakDuration, setBreakDuration] = useState(20);
+  const [breakAfterSession, setBreakAfterSession] = useState(2);
   const attendanceLink = `${window.location.origin}${window.location.pathname}?attendance=morning`;
+
+  React.useEffect(() => {
+    dbUtils.getSetting('classTimingConfig').then(config => {
+      if (!config) return;
+      setDayStart(config.dayStart || '06:45');
+      setAssemblyDuration(config.assemblyDuration || 15);
+      setClassDuration(config.classDuration || 45);
+      setBreakDuration(config.breakDuration || 20);
+      setBreakAfterSession(config.breakAfterSession || 2);
+    }).catch(console.error);
+  }, []);
 
   const handleClearEmployees = async () => {
     if (window.confirm('تحذير: سيتم حذف جميع أسماء وبيانات الموظفين المخزنة محلياً. هل أنت متأكد؟')) {
@@ -51,7 +68,11 @@ const SettingsView: React.FC<SettingsViewProps> = ({ employees, onClearEmployees
     }
     setIsPublishingRoster(true);
     try {
-      await publishMorningAttendanceRoster(employees);
+      const schedule = await dbUtils.getSchedule();
+      const timingConfig = { dayStart, assemblyDuration, classDuration, breakDuration, breakAfterSession };
+      await dbUtils.setSetting('classTimingConfig', timingConfig);
+      const timings = buildClassTimings(dayStart, assemblyDuration, classDuration, breakDuration, breakAfterSession);
+      await publishMorningAttendanceRoster(employees, schedule, timings);
       await navigator.clipboard?.writeText(attendanceLink);
       alert('تم تحديث رابط التحضير ونسخه. يمكن إرساله للإداري الآن.');
     } catch (e) {
@@ -82,6 +103,47 @@ const SettingsView: React.FC<SettingsViewProps> = ({ employees, onClearEmployees
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-3xl border border-emerald-100 flex flex-col gap-4 md:col-span-3 shadow-sm">
+          <div>
+            <h3 className="font-black text-slate-800 text-lg">توقيت اليوم الدراسي لبوابة الإداري</h3>
+            <p className="text-xs text-slate-500 mt-1 font-bold">يستخدم لحساب الحصة الحالية والمدة المتبقية عند تسجيل انصراف من الحصة.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-600">بداية الطابور</span>
+              <input type="time" value={dayStart} onChange={e => setDayStart(e.target.value)} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-600">مدة الطابور</span>
+              <input type="number" min="0" value={assemblyDuration} onChange={e => setAssemblyDuration(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-600">مدة الحصة</span>
+              <input type="number" min="1" value={classDuration} onChange={e => setClassDuration(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-600">مدة الفسحة</span>
+              <input type="number" min="0" value={breakDuration} onChange={e => setBreakDuration(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50" />
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-600">الفسحة بعد الحصة</span>
+              <select value={breakAfterSession} onChange={e => setBreakAfterSession(Number(e.target.value))} className="w-full px-3 py-3 rounded-xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-emerald-50">
+                {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="w-full text-sm text-right">
+              <thead className="bg-emerald-50 text-emerald-800 font-black"><tr><th className="p-3">الحصة</th><th className="p-3">المدة</th><th className="p-3">من</th><th className="p-3">إلى</th></tr></thead>
+              <tbody className="divide-y divide-slate-100">
+                {buildClassTimings(dayStart, assemblyDuration, classDuration, breakDuration, breakAfterSession).map(t => (
+                  <tr key={t.id}><td className="p-3 font-black">{t.label}</td><td className="p-3">{t.duration}د</td><td className="p-3">{t.start}</td><td className="p-3">{t.end}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center text-center gap-4 hover:shadow-md transition-all md:col-span-2">
           <div className="w-16 h-16 bg-emerald-600 text-white rounded-full flex items-center justify-center">
             <ClipboardCheck size={32} />

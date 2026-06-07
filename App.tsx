@@ -11,7 +11,8 @@ import SentReportsTracking from './components/SentReportsTracking';
 import SignReport from './components/SignReport';
 import SettingsView from './components/SettingsView';
 import MorningAttendance from './components/MorningAttendance';
-import { getAllSharedReports, getMorningAttendanceByDate } from './utils/firebase';
+import DisciplineTrackingView from './components/DisciplineTrackingView';
+import { getAllSharedReports, getMorningAttendanceByDate, getClassIncidentsByDate } from './utils/firebase';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 import { formatPhoneNumber } from './utils/phoneFormatter';
@@ -31,7 +32,7 @@ const App: React.FC = () => {
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
-  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics' | 'schedule_questioning' | 'tracking' | 'settings'>('employees');
+  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics' | 'discipline_tracking' | 'schedule_questioning' | 'tracking' | 'settings'>('employees');
   
   const [tempEmployeeData, setTempEmployeeData] = useState<Employee | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -108,6 +109,53 @@ const App: React.FC = () => {
         if (attendanceUpdated) await refresh();
       } catch (attendanceError) {
         console.error('Error syncing morning attendance:', attendanceError);
+      }
+
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const incidents = await getClassIncidentsByDate(today);
+        let classUpdated = false;
+        const findEmployeeByTeacher = (teacherName: string) => {
+          const parts = teacherName.split(' ').filter(Boolean);
+          return employees.find(emp => {
+            if (emp.name === teacherName || teacherName.includes(emp.name) || emp.name.includes(teacherName)) return true;
+            if (parts.length >= 2) return emp.name.includes(parts[0]) && emp.name.includes(parts[parts.length - 1]);
+            return false;
+          });
+        };
+
+        for (const incident of Object.values(incidents)) {
+          if (!incident?.scheduleEntry?.teacher) continue;
+          const sourceId = `class-${incident.id || `${incident.date}-${incident.scheduleEntry.session}-${incident.scheduleEntry.grade}-${incident.scheduleEntry.section}-${incident.incidentType}`}`;
+          if (updatedReports.some(r => r.sourceId === sourceId)) continue;
+          const employee = findEmployeeByTeacher(incident.scheduleEntry.teacher);
+          if (!employee) continue;
+          const isAbsence = incident.incidentType === 'absence';
+          const report: Report = {
+            employeeId: employee.id,
+            date: incident.date,
+            createdAt: today,
+            type: isAbsence ? 'ظ…ط³ط§ط،ظ„ط©_ط­طµطµ' : 'طھط£ط®ط±_ط§ظ†طµط±ط§ظپ',
+            notes: isAbsence
+              ? `عدم حضور الحصة ${incident.scheduleEntry.session} - ${incident.scheduleEntry.grade}/${incident.scheduleEntry.section}`
+              : `انصراف من الحصة ${incident.scheduleEntry.session} - المتبقي ${incident.remainingMinutes} دقيقة`,
+            actionTaken: '',
+            absenceSession: incident.scheduleEntry.session,
+            earlyDepartureTime: isAbsence ? '' : new Date(incident.recordedAt).toLocaleTimeString('ar-SA'),
+            minutesCount: incident.remainingMinutes,
+            missedClasses: [incident.scheduleEntry],
+            violationCategory: isAbsence ? 'class_absence_admin' : 'class_early_departure_admin',
+            source: 'admin_class_incident',
+            sourceId,
+            excuseStatus: 'pending',
+          };
+          const id = await dbUtils.addReport(report);
+          updatedReports.push({ ...report, id: Number(id) });
+          classUpdated = true;
+        }
+        if (classUpdated) await refresh();
+      } catch (classIncidentError) {
+        console.error('Error syncing class incidents:', classIncidentError);
       }
 
       setAllReports(updatedReports);
@@ -325,6 +373,12 @@ const App: React.FC = () => {
                 </div>
                 الإحصائيات والتحليل
               </button>
+              <button onClick={() => setViewMode('discipline_tracking')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'discipline_tracking' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
+                <div className={`${viewMode === 'discipline_tracking' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
+                  <Clock size={20} className={viewMode === 'discipline_tracking' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
+                </div>
+                متابعة التأخر والانصراف
+              </button>
               <button onClick={() => setViewMode('tracking')} className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all duration-300 group ${viewMode === 'tracking' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 translate-x-2' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}>
                 <div className={`${viewMode === 'tracking' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-emerald-100'} p-2 rounded-xl transition-colors`}>
                   <MessageCircle size={20} className={viewMode === 'tracking' ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'} />
@@ -442,6 +496,8 @@ const App: React.FC = () => {
               <ScheduleQuestioning employees={employees} onSaveReport={handleSaveReportBatch} />
             ) : viewMode === 'daily_log' ? (
               <DailyLog employees={employees} reports={allReports} onDeleteReport={handleDeleteReport} />
+            ) : viewMode === 'discipline_tracking' ? (
+              <DisciplineTrackingView employees={employees} reports={allReports} />
             ) : viewMode === 'tracking' ? (
               <SentReportsTracking employees={employees} />
             ) : (

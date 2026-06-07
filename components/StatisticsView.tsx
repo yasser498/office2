@@ -1,6 +1,6 @@
 import { Report, Employee } from '../types';
 import { BarChart3, Users, AlertTriangle, CalendarDays, TrendingUp, TrendingDown, UserMinus, Printer, Zap } from 'lucide-react';
-import { generateStatisticsPDF } from '../utils/pdfGenerator';
+import { generateOfficialStatisticsPDF } from '../utils/officialReports';
 import * as dbUtils from '../utils/db';
 import React, { useMemo } from 'react';
 import { summarizeAllEmployeesDiscipline } from '../utils/discipline';
@@ -17,6 +17,9 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
     const totalReports = reports.length;
     const absenceCount = reports.filter(r => r.type === 'غياب').length;
     const lateCount = reports.filter(r => (r.type === 'تأخر_انصراف' || r.type === 'مساءلة_حصص') && (r.excuseStatus === 'rejected' || !r.excuseStatus)).length;
+    const classQuestioningCount = reports.filter(r => r.type === 'مساءلة_حصص').length;
+    const pendingRepliesCount = reports.filter(r => r.firebaseId && !r.teacherSignature).length;
+    const signedRepliesCount = reports.filter(r => r.teacherSignature || r.teacherExcuse).length;
     
     const employeeFreq: Record<number, number> = {};
     reports.forEach(r => {
@@ -63,6 +66,9 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
       totalReports, 
       absenceCount, 
       lateCount, 
+      classQuestioningCount,
+      pendingRepliesCount,
+      signedRepliesCount,
       topEmployees, 
       monthlyData,
       disciplineSummaries,
@@ -75,7 +81,7 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
   const handlePrintStats = async () => {
     const schoolName = await dbUtils.getSetting('schoolName') || '..........';
     const principalName = await dbUtils.getSetting('principalName') || '..........';
-    await generateStatisticsPDF(stats, schoolName, principalName);
+    await generateOfficialStatisticsPDF(stats, schoolName, principalName);
   };
 
   const maxMonthValue = Math.max(...(Object.values(stats.monthlyData) as number[]), 1);
@@ -132,46 +138,6 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
             <h4 className="text-4xl font-black text-amber-600">{stats.lateCount}</h4>
           </div>
         </div>
-      </div>
-
-      <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
-          <div>
-            <h3 className="text-xl font-black text-slate-800">متابعة التأخر والانصراف خلال السنة المالية</h3>
-            <p className="text-sm font-bold text-slate-500 mt-1">السنة المالية من 1 يناير إلى 31 ديسمبر، والإجراءات تبدأ عند ساعتين ثم 3 ساعات ثم 7 ساعات.</p>
-          </div>
-          <div className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl font-black text-sm">
-            {new Date().getFullYear()}
-          </div>
-        </div>
-        {stats.actionRequired.length === 0 ? (
-          <div className="bg-slate-50 rounded-2xl p-6 text-center font-bold text-slate-500">لا يوجد موظفون بلغوا حد الإجراء حالياً.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {stats.actionRequired.map(item => (
-              <div key={item.employee.id} className={`p-4 rounded-2xl border ${
-                item.stage === 'deduction' ? 'bg-rose-50 border-rose-200' :
-                item.stage === 'written' ? 'bg-amber-50 border-amber-200' :
-                'bg-blue-50 border-blue-200'
-              }`}>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h4 className="font-black text-slate-800">{item.employee.name}</h4>
-                    <p className="text-xs font-bold text-slate-500 mt-1">{item.employee.workplace || 'موظف'}</p>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-2xl font-black text-slate-900">{item.hours}:{String(item.minutes).padStart(2, '0')}</p>
-                    <p className="text-[10px] font-black text-slate-500">ساعة:دقيقة</p>
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 rounded-xl bg-white border border-white/70 text-xs font-black text-slate-700">{item.stageLabel}</span>
-                  <span className="text-xs font-bold text-slate-600">{item.nextAction}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {stats.totalReports > 0 && (
