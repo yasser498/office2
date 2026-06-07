@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getAllSharedReports } from '../utils/firebase';
 import { CheckCircle, Clock, Search, Printer, MessageCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Employee, Report } from '../types';
+import { generateOfficialAbsenceForm, generateLateArrivalDepartureForm } from '../utils/pdfGenerator';
+
+interface SentReportsTrackingProps {
+  employees: Employee[];
+}
 
 const SentReportsTracking: React.FC<SentReportsTrackingProps> = ({ employees }) => {
   const [reports, setReports] = useState<any[]>([]);
@@ -29,7 +35,7 @@ const SentReportsTracking: React.FC<SentReportsTrackingProps> = ({ employees }) 
 
   const handlePrint = async (report: any) => {
     try {
-      let employee = employees.find(e => e.name === report.employeeName);
+      let employee = employees.find(e => e.name === report.employeeName || (report.employeePhone && e.phone === report.employeePhone));
       if (!employee) {
         employee = {
           id: 0,
@@ -41,11 +47,32 @@ const SentReportsTracking: React.FC<SentReportsTrackingProps> = ({ employees }) 
           workplace: ''
         };
       }
+
+      const printableReport: Report = {
+        id: 0,
+        employeeId: employee.id,
+        date: report.date,
+        endDate: report.endDate || report.date,
+        createdAt: report.sharedAt?.split('T')[0] || report.date,
+        daysCount: report.daysCount || 1,
+        type: report.type,
+        notes: report.notes || '',
+        actionTaken: report.actionTaken || '',
+        lateArrivalTime: report.lateArrivalTime || '',
+        earlyDepartureTime: report.earlyDepartureTime || '',
+        absenceSession: report.absenceSession || '',
+        missedClasses: report.missedClasses || [],
+        firebaseId: report.firebaseId,
+        teacherExcuse: report.teacherExcuse || '',
+        teacherSignature: report.teacherSignature || '',
+        signedAt: report.signedAt || '',
+        excuseStatus: report.status === 'signed' ? 'pending' : undefined,
+      };
       
       if (report.type === 'غياب') {
-        await generateOfficialAbsenceForm(employee, report);
+        await generateOfficialAbsenceForm(employee, printableReport);
       } else {
-        await generateLateArrivalDepartureForm(employee, report);
+        await generateLateArrivalDepartureForm(employee, printableReport);
       }
     } catch (e: any) {
       alert("حدث خطأ أثناء الطباعة: " + e.message);
