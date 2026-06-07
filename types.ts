@@ -1,5 +1,5 @@
 
-export type ReportType = 'غياب' | 'تأخر_انصراف' | 'إذن_خروج' | 'خطاب_إنذار' | 'شكر_وتقدير' | 'مساءلة_حصص';
+export type ReportType = 'غياب' | 'تأخر_انصراف' | 'إذن_خروج' | 'خطاب_إنذار' | 'شكر_وتقدير' | 'مساءلة_حصص' | 'تأخر' | 'انصراف' | 'غياب_حصة';
 
 export interface Employee {
   id: number;
@@ -43,6 +43,19 @@ export interface Report {
   teacherExcuse?: string;
   teacherSignature?: string;
   signedAt?: string;
+  violationCategory?: string;
+  minutesCount?: number;
+  source?: string;
+  sourceId?: string;
+  period?: string;
+}
+
+export interface MorningAttendanceRecord {
+  employeeId: number;
+  employeeName: string;
+  status: 'present' | 'absent';
+  date: string;
+  updatedAt: string;
 }
 
 export interface ScheduleEntry {

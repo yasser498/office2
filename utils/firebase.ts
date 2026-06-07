@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, set, get, child, update } from 'firebase/database';
+import { Employee, MorningAttendanceRecord } from '../types';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcKj43w38I4vSD9gdedurxwm8A0-tNjZs",
@@ -93,4 +94,40 @@ export const deleteAllFirebaseReports = async () => {
     console.error("Error deleting all firebase reports: ", e);
     throw e;
   }
+};
+
+export const publishMorningAttendanceRoster = async (employees: Employee[]) => {
+  const roster = employees.map(emp => ({
+    id: emp.id,
+    name: emp.name,
+    employeeCode: emp.employeeCode || '',
+    workplace: emp.workplace || '',
+  }));
+  await set(ref(db, 'morning_attendance_roster'), {
+    updatedAt: new Date().toISOString(),
+    employees: roster,
+  });
+};
+
+export const getMorningAttendanceRoster = async () => {
+  const snapshot = await get(child(ref(db), 'morning_attendance_roster'));
+  if (!snapshot.exists()) return { employees: [], updatedAt: '' };
+  return snapshot.val();
+};
+
+export const getMorningAttendanceByDate = async (date: string): Promise<Record<string, MorningAttendanceRecord>> => {
+  const snapshot = await get(child(ref(db), `morning_attendance/${date}`));
+  return snapshot.exists() ? snapshot.val() : {};
+};
+
+export const setMorningAttendanceStatus = async (date: string, employee: { id: number; name: string }, status: 'present' | 'absent') => {
+  const record: MorningAttendanceRecord = {
+    employeeId: employee.id,
+    employeeName: employee.name,
+    status,
+    date,
+    updatedAt: new Date().toISOString(),
+  };
+  await set(ref(db, `morning_attendance/${date}/${employee.id}`), record);
+  return record;
 };

@@ -19,7 +19,9 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
     actionTaken: '',
     lateArrivalTime: '',
     absenceSession: '',
-    earlyDepartureTime: ''
+    earlyDepartureTime: '',
+    minutesCount: 0,
+    violationCategory: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
@@ -39,6 +41,8 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
         lateArrivalTime: editingReport.lateArrivalTime || '',
         absenceSession: editingReport.absenceSession || '',
         earlyDepartureTime: editingReport.earlyDepartureTime || '',
+        minutesCount: editingReport.minutesCount || 0,
+        violationCategory: editingReport.violationCategory || '',
         principalName: editingReport.principalName,
         createdAt: editingReport.createdAt
       });
@@ -78,14 +82,51 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
     
     setIsSubmitting(true);
     const todayStr = new Date().toISOString().split('T')[0];
+    const normalizeReport = (employeeId: number): Report => {
+      const minutes = Number(formData.minutesCount || formData.lateArrivalTime || 0);
+      if (formData.type === 'تأخر') {
+        return {
+          ...formData,
+          employeeId,
+          type: 'تأخر_انصراف',
+          minutesCount: minutes,
+          violationCategory: 'morning_late',
+          period: 'morning',
+          createdAt: formData.createdAt || todayStr
+        } as Report;
+      }
+      if (formData.type === 'انصراف') {
+        return {
+          ...formData,
+          employeeId,
+          type: 'تأخر_انصراف',
+          minutesCount: minutes,
+          violationCategory: 'early_departure',
+          period: 'day',
+          createdAt: formData.createdAt || todayStr
+        } as Report;
+      }
+      if (formData.type === 'غياب_حصة') {
+        return {
+          ...formData,
+          employeeId,
+          type: 'تأخر_انصراف',
+          minutesCount: minutes || 45,
+          violationCategory: 'class_absence',
+          period: formData.absenceSession || '',
+          createdAt: formData.createdAt || todayStr
+        } as Report;
+      }
+      return { ...formData, employeeId, createdAt: formData.createdAt || todayStr } as Report;
+    };
 
     try {
       if (editingReport) {
-        await onSave({ ...formData, employeeId: selectedEmployees[0].id } as Report, selectedEmployees[0].id);
+        await onSave(normalizeReport(selectedEmployees[0].id), selectedEmployees[0].id);
         onCancelEdit();
       } else {
         for (const emp of selectedEmployees) {
-          await onSave({ ...formData, createdAt: todayStr } as Report, emp.id);
+          await onSave(normalizeReport(emp.id), emp.id);
         }
         setFormData({
           date: new Date().toISOString().split('T')[0],
@@ -96,7 +137,9 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           actionTaken: '',
           lateArrivalTime: '',
           absenceSession: '',
-          earlyDepartureTime: ''
+          earlyDepartureTime: '',
+          minutesCount: 0,
+          violationCategory: ''
         });
       }
       alert(editingReport ? 'تم تحديث التقرير' : `تم إنشاء ${selectedEmployees.length} تقارير بنجاح`);
@@ -222,6 +265,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           )}
 
           {formData.type === 'انصراف' && (
+            <>
             <div className="space-y-2 lg:col-span-3 animate-in fade-in">
               <label className="text-sm font-black text-slate-700 mr-2">وقت الانصراف المبكر</label>
               <div className="relative">
@@ -235,9 +279,23 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
                 />
               </div>
             </div>
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in">
+              <label className="text-sm font-black text-slate-700 mr-2">الدقائق المحتسبة</label>
+              <input
+                type="number"
+                min="1"
+                placeholder="مثال: 20"
+                value={formData.minutesCount || ''}
+                onChange={(e) => setFormData({ ...formData, minutesCount: Number(e.target.value) })}
+                className="w-full px-5 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700"
+                required
+              />
+            </div>
+            </>
           )}
 
           {formData.type === 'غياب_حصة' && (
+            <>
             <div className="space-y-2 lg:col-span-3 animate-in fade-in">
               <label className="text-sm font-black text-slate-700 mr-2">الحصة المفقودة</label>
               <select
@@ -250,6 +308,18 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
                 {sessions.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+            <div className="space-y-2 lg:col-span-3 animate-in fade-in">
+              <label className="text-sm font-black text-slate-700 mr-2">الدقائق المحتسبة</label>
+              <input
+                type="number"
+                min="1"
+                value={formData.minutesCount || 45}
+                onChange={(e) => setFormData({ ...formData, minutesCount: Number(e.target.value) })}
+                className="w-full px-5 py-3.5 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition-all bg-slate-50 font-black text-slate-700"
+                required
+              />
+            </div>
+            </>
           )}
         </div>
 

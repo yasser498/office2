@@ -13,6 +13,7 @@ import {
 import { shareReportToFirebase } from '../utils/firebase';
 import * as dbUtils from '../utils/db';
 import { MessageCircle } from 'lucide-react';
+import { summarizeEmployeeDiscipline } from '../utils/discipline';
 
 interface HistoryListProps {
   reports: Report[];
@@ -29,6 +30,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
   
   const [exitData, setExitData] = useState({ start: '', end: '', reason: '' });
   const [warningData, setWarningData] = useState({ level: 'الأول', letterNo: '' });
+  const disciplineSummary = summarizeEmployeeDiscipline(selectedEmployee, reports);
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -165,6 +167,30 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
           </button>
         </div>
       )}
+
+      <div className={`mb-6 p-5 rounded-3xl border ${
+        disciplineSummary.stage === 'deduction' ? 'bg-rose-50 border-rose-200' :
+        disciplineSummary.stage === 'written' ? 'bg-amber-50 border-amber-200' :
+        disciplineSummary.stage === 'verbal' ? 'bg-blue-50 border-blue-200' :
+        'bg-slate-50 border-slate-200'
+      }`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h4 className="font-black text-slate-800">رصيد التأخر والانصراف للسنة المالية</h4>
+            <p className="text-xs font-bold text-slate-500 mt-1">من 1 يناير إلى 31 ديسمبر</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="bg-white px-4 py-2 rounded-2xl border border-white/70 text-center">
+              <div className="text-2xl font-black text-slate-900">{disciplineSummary.hours}:{String(disciplineSummary.minutes).padStart(2, '0')}</div>
+              <div className="text-[10px] font-black text-slate-400">ساعة:دقيقة</div>
+            </div>
+            <div className="bg-white px-4 py-2 rounded-2xl border border-white/70 font-black text-sm text-slate-700">
+              {disciplineSummary.stageLabel}
+            </div>
+          </div>
+        </div>
+        <p className="mt-3 text-sm font-bold text-slate-600 leading-relaxed">{disciplineSummary.nextAction}</p>
+      </div>
 
       {showExitModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">

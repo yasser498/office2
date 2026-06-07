@@ -185,6 +185,8 @@ const ScheduleQuestioning: React.FC<ScheduleQuestioningProps> = ({ employees, on
       actionTaken: '',
       excuseStatus: 'pending',
       missedClasses: selectedClassesForReport,
+      minutesCount: selectedClassesForReport.length * 45,
+      violationCategory: 'missed_classes',
       createdAt: todayStr
     };
 

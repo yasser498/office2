@@ -10,7 +10,8 @@ import ScheduleQuestioning from './components/ScheduleQuestioning';
 import SentReportsTracking from './components/SentReportsTracking';
 import SignReport from './components/SignReport';
 import SettingsView from './components/SettingsView';
-import { getAllSharedReports } from './utils/firebase';
+import MorningAttendance from './components/MorningAttendance';
+import { getAllSharedReports, getMorningAttendanceByDate } from './utils/firebase';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 import { formatPhoneNumber } from './utils/phoneFormatter';
@@ -46,12 +47,11 @@ const App: React.FC = () => {
   const refreshAllReports = async () => {
     try {
       const reports = await dbUtils.getAllReports();
-      setAllReports(reports);
+      let updatedReports = [...reports];
 
       try {
         const shared = await getAllSharedReports();
         let updated = false;
-        const updatedReports = [...reports];
         
         for (const sReport of shared) {
           if (sReport.status === 'signed' && sReport.firebaseId) {
@@ -73,11 +73,44 @@ const App: React.FC = () => {
           }
         }
         if (updated) {
-          setAllReports(updatedReports);
+          reports.splice(0, reports.length, ...updatedReports);
         }
       } catch (syncError) {
         console.error('Error syncing with firebase:', syncError);
       }
+
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const attendance = await getMorningAttendanceByDate(today);
+        let attendanceUpdated = false;
+        for (const record of Object.values(attendance)) {
+          if (record.status !== 'absent') continue;
+          const sourceId = `morning-${record.date}-${record.employeeId}`;
+          if (updatedReports.some(r => r.sourceId === sourceId)) continue;
+          const report: Report = {
+            employeeId: record.employeeId,
+            date: record.date,
+            createdAt: today,
+            type: 'تأخر_انصراف',
+            notes: 'لم يحضر التحضير الصباحي',
+            actionTaken: '',
+            lateArrivalTime: '15',
+            minutesCount: 15,
+            violationCategory: 'morning_attendance_absent',
+            source: 'morning_attendance',
+            sourceId,
+            excuseStatus: 'pending',
+          };
+          const id = await dbUtils.addReport(report);
+          updatedReports.push({ ...report, id: Number(id) });
+          attendanceUpdated = true;
+        }
+        if (attendanceUpdated) await refresh();
+      } catch (attendanceError) {
+        console.error('Error syncing morning attendance:', attendanceError);
+      }
+
+      setAllReports(updatedReports);
     } catch (error) {
       console.error('Error fetching all reports:', error);
     }
@@ -196,9 +229,14 @@ const App: React.FC = () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const signId = urlParams.get('sign');
+  const attendanceMode = urlParams.get('attendance');
 
   if (signId) {
     return <SignReport reportId={signId} />;
+  }
+
+  if (attendanceMode === 'morning') {
+    return <MorningAttendance />;
   }
 
   return (
@@ -318,7 +356,7 @@ const App: React.FC = () => {
           {/* Main Content Area */}
           <section className="lg:col-span-9">
             {viewMode === 'settings' ? (
-              <SettingsView onClearEmployees={clearEmployeesOnly} onClearReports={clearReportsOnly} />
+              <SettingsView employees={employees} onClearEmployees={clearEmployeesOnly} onClearReports={clearReportsOnly} onScheduleCleared={async () => {}} />
             ) : viewMode === 'employees' ? (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Search & List Card */}
