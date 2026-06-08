@@ -1,4 +1,4 @@
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin, Calendar, Menu, X, MessageCircle, Clock } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin, Calendar, Menu, X, MessageCircle } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
@@ -84,6 +84,23 @@ const App: React.FC = () => {
         const today = new Date().toISOString().split('T')[0];
         const attendance = await getMorningAttendanceByDate(today);
         let attendanceUpdated = false;
+        const absentSourceIds = new Set(
+          Object.values(attendance)
+            .filter(record => record.status === 'absent')
+            .map(record => `morning-${record.date}-${record.employeeId}`)
+        );
+        const staleMorningReports = updatedReports.filter(report =>
+          report.source === 'morning_attendance' &&
+          report.date === today &&
+          report.sourceId &&
+          !absentSourceIds.has(report.sourceId)
+        );
+        for (const report of staleMorningReports) {
+          if (!report.id) continue;
+          await dbUtils.deleteReport(report.id);
+          updatedReports = updatedReports.filter(item => item.id !== report.id);
+          attendanceUpdated = true;
+        }
         for (const record of Object.values(attendance)) {
           if (record.status !== 'absent') continue;
           const sourceId = `morning-${record.date}-${record.employeeId}`;

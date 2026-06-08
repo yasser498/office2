@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, BookOpenCheck, CheckCircle, Clock, LogOut, RefreshCw, Search, UserCheck, Users, XCircle } from 'lucide-react';
 import { getAdminPortalPayload, getClassIncidentsByDate, getMorningAttendanceByDate, setClassIncident, setMorningAttendanceStatus } from '../utils/firebase';
 import { AdminClassIncident, AdminPortalPayload, ClassTiming, MorningAttendanceRecord, ScheduleEntry } from '../types';
-import { buildDefaultClassTimings, formatTime12, getArabicDayName, getCurrentClassTiming, getRemainingMinutes } from '../utils/classTimings';
+import { buildDefaultClassTimings, formatTime12, getArabicDayName, getCurrentClassTiming, getRemainingMinutes, normalizeSession, sameSession } from '../utils/classTimings';
 
 interface RosterEmployee {
   id: number;
@@ -28,7 +28,7 @@ const writeCache = (payload: AdminPortalPayload) => {
 };
 
 const sameClass = (a: ScheduleEntry, b: ScheduleEntry) =>
-  a.day === b.day && a.session === b.session && a.grade === b.grade && a.section === b.section && a.teacher === b.teacher;
+  a.day === b.day && sameSession(a.session, b.session) && a.grade === b.grade && a.section === b.section && a.teacher === b.teacher;
 
 const MorningAttendance: React.FC = () => {
   const [mode, setMode] = useState<'home' | 'morning' | 'classes'>('home');
@@ -38,6 +38,7 @@ const MorningAttendance: React.FC = () => {
   const [search, setSearch] = useState('');
   const [gradeFilter, setGradeFilter] = useState('');
   const [sectionFilter, setSectionFilter] = useState('');
+  const [sessionFilter, setSessionFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | number | null>(null);
 
@@ -107,12 +108,21 @@ const MorningAttendance: React.FC = () => {
 
   const grades = Array.from(new Set(todaySchedule.map(row => row.grade).filter(Boolean))).sort();
   const sections = Array.from(new Set(todaySchedule.filter(row => !gradeFilter || row.grade === gradeFilter).map(row => row.section).filter(Boolean))).sort();
-  const activeSession = currentTiming?.session || '';
+  const sessionOptions = Array.from(
+    new Map(
+      [
+        ...timings.filter(timing => timing.type === 'class').map(timing => [normalizeSession(timing.session || timing.label), timing.label]),
+        ...todaySchedule.map(row => [normalizeSession(row.session), row.session]),
+      ].filter(([key]) => Boolean(key))
+    ).entries()
+  );
+  const activeSession = sessionFilter || currentTiming?.session || currentTiming?.label || '';
+  const activeSessionKey = normalizeSession(activeSession);
 
   const filteredSchedule = todaySchedule.filter(row =>
     (!gradeFilter || row.grade === gradeFilter) &&
     (!sectionFilter || row.section === sectionFilter) &&
-    (!activeSession || row.session === activeSession)
+    (!activeSessionKey || normalizeSession(row.session) === activeSessionKey)
   );
 
   const toggleStatus = async (employee: RosterEmployee) => {
@@ -128,7 +138,10 @@ const MorningAttendance: React.FC = () => {
   };
 
   const findTimingForSession = (session: string): ClassTiming | undefined =>
-    timings.find(timing => timing.type === 'class' && timing.session === session) || currentTiming;
+    timings.find(timing =>
+      timing.type === 'class' &&
+      sameSession(timing.session || timing.label, session)
+    ) || currentTiming;
 
   const incidentKey = (row: ScheduleEntry, incidentType: AdminClassIncident['incidentType']) =>
     Object.keys(classRecords).find(key => {
@@ -233,7 +246,7 @@ const MorningAttendance: React.FC = () => {
         {mode === 'classes' && (
           <>
             <div className="bg-white rounded-3xl p-5 shadow-lg border border-slate-200">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div className="bg-amber-50 rounded-2xl p-4 md:col-span-1">
                   <p className="text-xs font-black text-amber-600">الحصة الحالية</p>
                   <h3 className="text-2xl font-black text-amber-900">{currentTiming?.label || 'غير محددة'}</h3>
@@ -246,6 +259,10 @@ const MorningAttendance: React.FC = () => {
                 <select value={sectionFilter} onChange={e => setSectionFilter(e.target.value)} className="px-4 py-3 rounded-2xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-amber-100">
                   <option value="">كل الفصول</option>
                   {sections.map(value => <option key={value} value={value}>{value}</option>)}
+                </select>
+                <select value={sessionFilter} onChange={e => setSessionFilter(e.target.value)} className="px-4 py-3 rounded-2xl border border-slate-200 font-black outline-none focus:ring-4 focus:ring-amber-100">
+                  <option value="">الحصة الحالية تلقائياً</option>
+                  {sessionOptions.map(([key, label]) => <option key={key} value={String(label)}>{label}</option>)}
                 </select>
               </div>
             </div>

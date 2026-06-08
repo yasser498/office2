@@ -1,5 +1,56 @@
 import { ClassTiming } from '../types';
 
+const SESSION_ALIASES: Record<string, string> = {
+  '1': '1',
+  '01': '1',
+  'الأولى': '1',
+  'الاولى': '1',
+  'اولى': '1',
+  'الحصة الأولى': '1',
+  'الحصة الاولى': '1',
+  '2': '2',
+  '02': '2',
+  'الثانية': '2',
+  'ثانية': '2',
+  'الحصة الثانية': '2',
+  '3': '3',
+  '03': '3',
+  'الثالثة': '3',
+  'ثالثة': '3',
+  'الحصة الثالثة': '3',
+  '4': '4',
+  '04': '4',
+  'الرابعة': '4',
+  'رابعة': '4',
+  'الحصة الرابعة': '4',
+  '5': '5',
+  '05': '5',
+  'الخامسة': '5',
+  'خامسة': '5',
+  'الحصة الخامسة': '5',
+  '6': '6',
+  '06': '6',
+  'السادسة': '6',
+  'سادسة': '6',
+  'الحصة السادسة': '6',
+  '7': '7',
+  '07': '7',
+  'السابعة': '7',
+  'سابعة': '7',
+  'الحصة السابعة': '7',
+};
+
+export const normalizeSession = (session?: string) => {
+  const value = String(session || '').trim();
+  if (!value) return '';
+  const numeric = value.match(/\d+/)?.[0];
+  if (numeric) return String(Number(numeric));
+  const cleaned = value.replace(/^حصة\s*/, '').replace(/^الحصة\s*/, '').trim();
+  return SESSION_ALIASES[value] || SESSION_ALIASES[cleaned] || cleaned;
+};
+
+export const sameSession = (a?: string, b?: string) => normalizeSession(a) === normalizeSession(b);
+
 export const SESSION_LABELS = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة'];
 
 const pad = (value: number) => String(value).padStart(2, '0');
