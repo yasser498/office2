@@ -111,17 +111,29 @@ const MorningAttendance: React.FC = () => {
   const sessionOptions = Array.from(
     new Map(
       [
-        ...timings.filter(timing => timing.type === 'class').map(timing => [normalizeSession(timing.session || timing.label), timing.label]),
+        ...timings.filter(timing => timing.type !== 'break').map(timing => [normalizeSession(timing.session || timing.label), timing.label]),
         ...todaySchedule.map(row => [normalizeSession(row.session), row.session]),
       ].filter(([key]) => Boolean(key))
     ).entries()
   );
   const activeSession = sessionFilter || currentTiming?.session || currentTiming?.label || '';
   const activeSessionKey = normalizeSession(activeSession);
+  const activeTiming = timings.find(timing => normalizeSession(timing.session || timing.label) === activeSessionKey) || currentTiming;
+  const isAssemblySession = activeTiming?.type === 'assembly';
+  const scheduleRows: ScheduleEntry[] = isAssemblySession
+    ? employees.map(employee => ({
+        day: dayName,
+        session: activeTiming?.label || 'الطابور',
+        grade: 'عام',
+        section: 'عام',
+        subject: activeTiming?.label || 'الطابور',
+        teacher: employee.name,
+      }))
+    : todaySchedule;
 
-  const filteredSchedule = todaySchedule.filter(row =>
-    (!gradeFilter || row.grade === gradeFilter) &&
-    (!sectionFilter || row.section === sectionFilter) &&
+  const filteredSchedule = scheduleRows.filter(row =>
+    (isAssemblySession || !gradeFilter || row.grade === gradeFilter) &&
+    (isAssemblySession || !sectionFilter || row.section === sectionFilter) &&
     (!activeSessionKey || normalizeSession(row.session) === activeSessionKey)
   );
 
@@ -139,7 +151,7 @@ const MorningAttendance: React.FC = () => {
 
   const findTimingForSession = (session: string): ClassTiming | undefined =>
     timings.find(timing =>
-      timing.type === 'class' &&
+      timing.type !== 'break' &&
       sameSession(timing.session || timing.label, session)
     ) || currentTiming;
 
@@ -289,13 +301,13 @@ const MorningAttendance: React.FC = () => {
                         {timing ? `${formatTime12(timing.start)} - ${formatTime12(timing.end)}` : ''}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 mt-4">
+                    <div className={`grid ${isAssemblySession ? 'grid-cols-1' : 'grid-cols-2'} gap-2 mt-4`}>
                       <button onClick={() => recordClassIncident(row, 'absence')} disabled={!!absenceRecorded || savingId === `${row.grade}-${row.section}-${row.session}-absence`} className="bg-rose-600 disabled:bg-rose-200 text-white rounded-2xl py-3 font-black flex items-center justify-center gap-2">
                         <XCircle size={18} /> {absenceRecorded ? 'تم عدم الحضور' : 'عدم حضور'}
                       </button>
-                      <button onClick={() => recordClassIncident(row, 'early_departure')} disabled={!!departureRecorded || savingId === `${row.grade}-${row.section}-${row.session}-early_departure`} className="bg-amber-500 disabled:bg-amber-200 text-white rounded-2xl py-3 font-black flex items-center justify-center gap-2">
+                      {!isAssemblySession && <button onClick={() => recordClassIncident(row, 'early_departure')} disabled={!!departureRecorded || savingId === `${row.grade}-${row.section}-${row.session}-early_departure`} className="bg-amber-500 disabled:bg-amber-200 text-white rounded-2xl py-3 font-black flex items-center justify-center gap-2">
                         <LogOut size={18} /> {departureRecorded ? 'تم الانصراف' : `انصراف (${remaining}د)`}
-                      </button>
+                      </button>}
                     </div>
                   </div>
                 );

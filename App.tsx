@@ -49,6 +49,7 @@ const App: React.FC = () => {
     try {
       const reports = await dbUtils.getAllReports();
       let updatedReports = [...reports];
+      const ignoredSourceIds = new Set<string>((await dbUtils.getSetting('ignoredSourceIds')) || []);
 
       try {
         const shared = await getAllSharedReports();
@@ -104,6 +105,7 @@ const App: React.FC = () => {
         for (const record of Object.values(attendance)) {
           if (record.status !== 'absent') continue;
           const sourceId = `morning-${record.date}-${record.employeeId}`;
+          if (ignoredSourceIds.has(sourceId)) continue;
           if (updatedReports.some(r => r.sourceId === sourceId)) continue;
           const report: Report = {
             employeeId: record.employeeId,
@@ -144,10 +146,13 @@ const App: React.FC = () => {
         for (const incident of Object.values(incidents)) {
           if (!incident?.scheduleEntry?.teacher) continue;
           const sourceId = `class-${incident.id || `${incident.date}-${incident.scheduleEntry.session}-${incident.scheduleEntry.grade}-${incident.scheduleEntry.section}-${incident.incidentType}`}`;
+          if (ignoredSourceIds.has(sourceId)) continue;
           if (updatedReports.some(r => r.sourceId === sourceId)) continue;
           const employee = findEmployeeByTeacher(incident.scheduleEntry.teacher);
           if (!employee) continue;
           const isAbsence = incident.incidentType === 'absence';
+          const sessionLabel = String(incident.scheduleEntry.session || '');
+          const minutes = Number(incident.remainingMinutes || 0) || (sessionLabel.includes('ط§ظ„ط·ط§ط¨ظˆط±') || sessionLabel.includes('الطابور') ? 15 : 45);
           const report: Report = {
             employeeId: employee.id,
             date: incident.date,
@@ -166,6 +171,12 @@ const App: React.FC = () => {
             sourceId,
             excuseStatus: 'pending',
           };
+          report.type = 'تأخر_انصراف';
+          report.notes = isAbsence
+            ? `عدم حضور الحصة ${sessionLabel} - ${incident.scheduleEntry.grade}/${incident.scheduleEntry.section}`
+            : `انصراف من الحصة ${sessionLabel} - المتبقي ${minutes} دقيقة`;
+          report.lateArrivalTime = String(minutes);
+          report.minutesCount = minutes;
           const id = await dbUtils.addReport(report);
           updatedReports.push({ ...report, id: Number(id) });
           classUpdated = true;
@@ -269,6 +280,12 @@ const App: React.FC = () => {
   };
 
   const handleDeleteReport = async (reportId: number) => {
+    const report = allReports.find(item => item.id === reportId) || employeeReports.find(item => item.id === reportId);
+    if (report?.sourceId) {
+      const ignored = new Set<string>((await dbUtils.getSetting('ignoredSourceIds')) || []);
+      ignored.add(report.sourceId);
+      await dbUtils.setSetting('ignoredSourceIds', Array.from(ignored));
+    }
     await removeReport(reportId);
     await refreshAllReports();
     if (selectedIds.length > 0) setEmployeeReports(await getReports(selectedIds[0]));
